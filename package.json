@@ -1,0 +1,20 @@
+{
+  "name": "rueter-ai",
+  "version": "0.0.1",
+  "description": "AI Router designed to enable multiple simultanious API calls to multiple AI model",
+  "keywords": [
+    "ai",
+    "router",
+    "rue",
+    "api",
+    "simultanious",
+    "rueter"
+  ],
+  "license": "ISC",
+  "author": "Aaron Meche",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
