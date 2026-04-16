@@ -10,6 +10,9 @@
     "simultanious",
     "rueter"
   ],
+  "files": [
+    "index.js"
+  ],
   "license": "ISC",
   "author": "Aaron Meche",
   "type": "module",
