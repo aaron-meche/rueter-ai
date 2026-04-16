@@ -18,13 +18,6 @@
 // index 3: most advanced / expensive
 //
 
-export const baseURLs = {
-    "anthropic": "",
-    "openai": "",
-    "gemini": "",
-    "grok": "https://api.x.ai/v1/chat/completions"
-}
-
 export const models = {
     "anthropic": [
         {
