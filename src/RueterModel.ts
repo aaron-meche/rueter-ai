@@ -4,28 +4,31 @@
 // Rueter AI
 // created by Aaron Meche
 //
-// Individual AI Model Class
-// that creates a single instance
-// of AI Model API Router
+// Individual AI Model for single instances
 //
 
-import type { Provider, ModelInfo, ModelResult, HttpRequestFormat } from "./types.js"
+import type { Provider, ModelInfo, ModelResult, HttpRequestFormat, RueterModelConfig } from "./types.js"
 import { models } from "./models.js"
 import { builders } from "./builders.js"
 import { calculateUsageCost } from "./calculateUsageCost.js"
 
 export class RueterModel {
+    // Model Type Config
     #provider: Provider
     #model: ModelInfo
     #apiKey: string
+    // Behavior Config
     #systemPrompt: string = ""
     #temperature: number = 0.7
     #maxTokens: number = 1024
 
-    constructor(provider: Provider, apiKey: string, model: number = 0) {
+    constructor(provider: Provider, apiKey: string, model: number = 0, config?: RueterModelConfig) {
         this.#provider = provider
         this.#apiKey = apiKey
         this.#model = models[provider][model]
+        if (config?.systemPrompt) this.#systemPrompt = config.systemPrompt
+        if (config?.temperature) this.#temperature = config.temperature
+        if (config?.maxTokens) this.#maxTokens = config.maxTokens
     }
 
     async #httpRequest(builder: HttpRequestFormat): Promise<Record<string, unknown>> {

@@ -2,19 +2,22 @@
 
 **One unified interface to rule all AI models.**
 
-A lightweight, high-performance npm package (with zero dependencies) that lets you call **Anthropic, OpenAI, Google Gemini, and xAI Grok** using the same simple syntax — no more juggling different SDKs, response formats, or pricing logic.
+A lightweight, zero-dependency TypeScript library that lets you interact with **Anthropic, OpenAI, Google Gemini, and xAI Grok** using a single, consistent API.
+
+Stop wrestling with different SDKs, response formats, and pricing logic — Rueter gives you one clean `.prompt()` method across all providers, with built-in cost tracking.
 
 ---
 
 ## ✨ Features
 
-- **Unified API** — Same `.prompt()` method across all providers
-- **Smart cost tracking** — Automatic token usage + USD/cents cost calculation per call
-- **Lightweight** — Zero heavy dependencies, pure `fetch`
-- **Provider-aware** — Handles differences in Anthropic, OpenAI, Gemini, and Grok automatically
-- **Cost-aware models** — Pre-configured cheapest-to-most-powerful models with real pricing
-
-Perfect for agents, chatbots, multi-model routing, cost optimization, and production AI workloads.
+- **Unified Prompt Interface** — Same `.prompt()` method for all models
+- **Automatic Cost Tracking** — Real-time token usage and USD cost calculation per request
+- **Zero Dependencies** — Pure `fetch`, extremely lightweight
+- **Smart Provider Handling** — Automatically adapts to each provider’s API quirks
+- **Specialized Models** — Ready-to-use expert models (Compressor, Fact Checker, Terminal Command, Prompt Enhancer, etc.)
+- **Full TypeScript Support** — Excellent types and IDE experience
+- **Multi-Model Orchestration** — Easily run the same prompt across multiple models in parallel
+- **Cost-Aware** — Built-in pricing for all supported models
 
 ---
 
@@ -22,4 +25,3 @@ Perfect for agents, chatbots, multi-model routing, cost optimization, and produc
 
 ```bash
 npm install rueter-ai
-```

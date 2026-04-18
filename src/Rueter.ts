@@ -4,18 +4,17 @@
 // Rueter AI
 // created by Aaron Meche
 //
-// Orchastrating Class for
-// multiple RueterModels
+// Orchastrator Class for multiple RueterModels
 //
 
-import type { Provider, RueterConfig, RueterResults } from "./types.js"
+import type { Provider, RueterModelConfig, RueterResults } from "./types.js"
 import { RueterModel } from "./RueterModel.js"
 
 export class Rueter {
     #models: RueterModel[] = []
 
-    constructor(config: RueterConfig) {
-        if (config.models) this.#models = config.models
+    constructor(models: RueterModel[], config: RueterModelConfig) {
+        if (models) this.#models = models
         if (config.systemPrompt) this.setSystemPrompt(config.systemPrompt)
         if (config.temperature !== undefined) this.setTemperature(config.temperature)
         if (config.maxTokens !== undefined) this.setMaxTokens(config.maxTokens)

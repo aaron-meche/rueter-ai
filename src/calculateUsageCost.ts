@@ -4,9 +4,6 @@
 // Rueter AI
 // created by Aaron Meche
 //
-// Helper function to calculate
-// total token cost of an API response
-//
 
 import type { ModelInfo, UsageCost } from "./types.js"
 

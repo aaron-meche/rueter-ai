@@ -3,8 +3,7 @@
 //
 // Rueter AI
 // created by Aaron Meche
-
-import type { RueterModel } from "./RueterModel.js"
+//
 
 export type Provider = "anthropic" | "openai" | "gemini" | "grok"
 
@@ -55,8 +54,7 @@ export interface ModelResult {
 // Multi-Model (Orchestra) Items
 // -----------------------------
 // Orchestra Configuration
-export interface RueterConfig {
-    models?: RueterModel[];
+export interface RueterModelConfig {
     systemPrompt?: string;
     temperature?: number;
     maxTokens?: number;

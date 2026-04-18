@@ -1,3 +1,10 @@
+//
+// models.ts
+//
+// Rueter AI
+// created by Aaron Meche
+//
+
 import type { Models } from "./types.js"
 
 export const models: Models = {
