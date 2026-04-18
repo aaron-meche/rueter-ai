@@ -1,0 +1,8 @@
+supply-chain:
+  risk:
+    allowed:
+      - network
+    reason: |
+      This package intentionally makes outbound HTTP requests to AI providers 
+      (Anthropic, OpenAI, xAI Grok, and Google Gemini) as its core functionality.
+      Network access is required and expected.

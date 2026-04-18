@@ -1,12 +1,20 @@
 {
   "name": "rueter-ai",
-  "version": "0.1.0",
-  "description": "AI Router designed to enable multiple simultanious API calls to multiple AI models",
+  "version": "0.2.1",
+  "description": "Lightweight unified interface to call Anthropic, OpenAI, Google Gemini, and xAI Grok with one API. Includes cost tracking and specialized models.",
   "keywords": [ "ai", "router", "rue", "api", "rueter" ],
-  "files": [ "dist/" ],
   "license": "MIT",
   "author": "Aaron Meche",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aaron-meche/rueter-ai"
+  },
+  "homepage": "https://github.com/aaron-meche/rueter-ai#README.md",
+  "bugs": {
+    "url": "https://github.com/aaron-meche/rueter-ai/issues"
+  },
+  "files": [ "dist/" ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
