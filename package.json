@@ -1,23 +1,26 @@
 {
   "name": "rueter-ai",
-  "version": "0.0.1",
-  "description": "AI Router designed to enable multiple simultanious API calls to multiple AI model",
-  "keywords": [
-    "ai",
-    "router",
-    "rue",
-    "api",
-    "simultanious",
-    "rueter"
-  ],
-  "files": [
-    "index.js"
-  ],
-  "license": "ISC",
+  "version": "0.1.0",
+  "description": "AI Router designed to enable multiple simultanious API calls to multiple AI models",
+  "keywords": [ "ai", "router", "rue", "api", "rueter" ],
+  "files": [ "dist/" ],
+  "license": "MIT",
   "author": "Aaron Meche",
   "type": "module",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "typescript": "^6.0.3"
   }
 }

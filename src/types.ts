@@ -1,41 +1,65 @@
-/**
- * Rueter - Type Definitions
- */
+//
+// types.ts
+//
+// Rueter AI
+// created by Aaron Meche
 
-export interface ModelConfig {
-    name: string;
-    model?: string;
-    input_cost: number;
-    output_cost: number;
-    context: number;
-    description: string;
+import type { RueterModel } from "./RueterModel.js"
+
+export type Provider = "anthropic" | "openai" | "gemini" | "grok"
+
+// Model-Specific Configuration
+export interface ModelInfo {
+    name: string
+    input_cost: number
+    output_cost: number
+    context: number
+    description: string
 }
+export type Models = Record<Provider, ModelInfo[]>
 
-export type Provider = 'anthropic' | 'openai' | 'gemini' | 'grok';
-
-export interface CostBreakdown {
-    model: string;
-    input: number;
-    output: number;
-    total: number;
+// Provider-specific HTTP Request Formatting Builders
+export interface HttpRequestFormat {
+    url: string
+    method: string
+    headers: Record<string, string>
+    body: object
 }
-
-export interface PromptResult {
-    response: string;
-    cost: CostBreakdown;
+export interface BuilderConfig {
+    apiKey: string
+    modelName: string
+    maxTokens: number
+    temperature: number
+    systemPrompt: string
 }
+export type BuilderFn = (config: BuilderConfig, prompt: string) => HttpRequestFormat
+export type Builders = Record<Provider, BuilderFn>
 
-export interface OrchestraResult {
-    [modelId: string]: {
-        res: string | null;
-        cost: number;
-        error?: string;
-    };
+// ----------------------
+// Per-API-Response Items
+// ----------------------
+// Cost Breakdown
+export interface UsageCost {
+    model: string
+    input: string
+    output: string
+    total: string
 }
-
+// Single Model Result
+export interface ModelResult {
+    res: string | null
+    cost: UsageCost | null
+    error?: string
+}
+// -----------------------------
+// Multi-Model (Orchestra) Items
+// -----------------------------
+// Orchestra Configuration
 export interface RueterConfig {
-    models?: any[];           // Temporary to avoid circular import
+    models?: RueterModel[];
     systemPrompt?: string;
     temperature?: number;
     maxTokens?: number;
 }
+// Prompt Results
+export type RueterResults = Record<string, ModelResult>
