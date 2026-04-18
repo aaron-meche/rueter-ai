@@ -47,7 +47,7 @@ export class RueterModel {
         return await response.json() as Record<string, unknown>
     }
 
-    async prompt(prompt: string): Promise<ModelResult> {
+    async prompt(prompt: string, returnJustText?: boolean): Promise<ModelResult> {
         const config = {
             apiKey: this.#apiKey,
             modelName: this.#model.name,
@@ -62,6 +62,7 @@ export class RueterModel {
             (res.candidates as any)?.[0]?.content?.parts?.[0]?.text ??
             (res.output_text as string | undefined) ??
             JSON.stringify(res)
+        if (returnJustText) return responseText
         return { res: responseText, cost: calculateUsageCost(res, this.#model) }
     }
 
