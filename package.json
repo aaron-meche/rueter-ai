@@ -2,7 +2,13 @@
   "name": "rueter-ai",
   "version": "0.2.4",
   "description": "Lightweight unified interface to call Anthropic, OpenAI, Google Gemini, and xAI Grok with one API. Includes cost tracking and specialized models.",
-  "keywords": [ "ai", "router", "rue", "api", "rueter" ],
+  "keywords": [
+    "ai",
+    "router",
+    "rue",
+    "api",
+    "rueter"
+  ],
   "license": "MIT",
   "author": "Aaron Meche",
   "type": "module",
@@ -14,7 +20,9 @@
   "bugs": {
     "url": "https://github.com/aaron-meche/rueter-ai/issues"
   },
-  "files": [ "dist/" ],
+  "files": [
+    "dist/"
+  ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -30,5 +38,8 @@
   "devDependencies": {
     "@types/node": "^25.6.0",
     "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2"
   }
 }
