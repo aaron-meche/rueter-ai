@@ -1,6 +1,6 @@
 {
   "name": "rueter-ai",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "description": "Lightweight unified interface to call Anthropic, OpenAI, Google Gemini, and xAI Grok with one API. Includes cost tracking and specialized models.",
   "keywords": [
     "ai",
