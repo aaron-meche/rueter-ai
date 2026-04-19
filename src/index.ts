@@ -5,8 +5,9 @@
 // created by Aaron Meche
 //
 
-export { RueterModel } from './RueterModel.js'; // Individual RueterModel
-export { Rueter } from './Rueter.js';           // Orechrator Model
-export * from './SpecialModels.js';             // Special Models
-export type * from './Types.js';                // Defined Types
-export { calculateUsageCost } from './Helpers.js';
+export { RueterModel } from './models/RueterModel.js'; // Individual RueterModel
+export { Rueter } from './models/Rueter.js';           // Orchestrator Model
+export * from './models/SpecialModels.js';             // Special Models
+export * from './models/Workflows.js';                 // Workflows
+export type * from './const/Types.js';                 // Defined Types
+export { calculateUsageCost } from './helpers/CostCalculator.js';

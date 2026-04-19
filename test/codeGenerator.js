@@ -4,72 +4,42 @@
 // Rueter AI Sandbox
 // created by Aaron Meche
 //
+// Tests the CodeProjectGenerator workflow end-to-end.
+// Run: node test/codeGenerator.js
+//
 
-import fs from 'fs';
-import 'dotenv/config'
-import { PromptEnhancerModel, CodeGeneratorModel } from "rueter-ai";
+import "dotenv/config"
+import { CodeProjectGenerator } from "rueter-ai"
 
-function writeToFile(filePath, textContent) {
-    try {
-        fs.writeFileSync(filePath, textContent, 'utf8');
-        return true;
-    } catch (error) {
-        console.error('Error writing file:', error.message);
-        throw error;
-    }
-}
+const PROJECT_PROMPT = `
+Build a "Rue" programming language compiler and toolchain. Rue is a JavaScript-compiled
+styling language that compiles .rue files into valid CSS. Its defining feature is support
+for nested style blocks, for example:
 
-const CodePrompt = `
-I am trying to write a new coding language called the "rue" programming language. it is designed as a javascript-compiled language, where 
-a javascript file will read a .rue file, take the text content, and run it through a javascript compiler, where it will translate the rue
-syntax into functioning css syntax. the only new feature that the rue programming language adds is the ability to have nested styles, such as:
-.special-box{
-    background: black;
-    .inside{
-        background: red;
-    }
-    :hover{
-        outline: solid 1pt white;
-    }
-}
-... write a javascript file that contains RueFile class with the necessary utilities to compile a rue language file into functioning, correct css
+  .special-box {
+      background: black;
+      .inside {
+          background: red;
+      }
+      :hover {
+          outline: solid 1pt white;
+      }
+  }
+
+The project must include:
+  - A RueFile class that reads a .rue source file and compiles it to CSS
+  - A recursive parser that correctly resolves nested selectors into flat CSS rules
+  - A CLI entry point (rue.js) that accepts a .rue file path and writes a .css file
+  - A small standard library of reusable .rue snippets (reset, typography, colors)
+  - A test suite covering nested selectors, pseudo-classes, media queries, and edge cases
 `
 
-
-const promptEnhancer = PromptEnhancerModel(process.env.GROK_API)
-const codeGenerator = CodeGeneratorModel(process.env.GROK_API)
-
-async function generateCode() {
-    let cost = 0;
-    try {
-        console.log("🔄 Enhancing prompt...\n");
-        const enhancedPrompt = await promptEnhancer.prompt(CodePrompt);
-        const enhancedPromptText = await enhancedPrompt.res
-        const enhancedPromptCost = await enhancedPrompt.cost.total
-        console.log("✅ Enhanced Prompt:\n");
-        console.log(enhancedPromptText);
-        console.log("\n" + "=".repeat(80) + "\n");
-        cost += Number(enhancedPromptCost)
-
-        console.log("🤖 Generating code...\n");
-        const generatedCode = await codeGenerator.prompt(enhancedPromptText);
-        const generatedCodeText = await generatedCode.res
-        const generatedCodeCost = await generatedCode.cost.total
-        console.log("✅ Generated Code:\n");
-        console.log(generatedCodeText);
-        cost += Number(generatedCodeCost)
-
-        // Write to file
-        const outputPath = "./RueFile.js";
-        fs.writeFileSync(outputPath, generatedCodeText, 'utf8');
-
-        console.log(`🎉 Successfully written to: ${outputPath}`);
-        console.log("Total Cost", cost)
-
-    } catch (err) {
-        console.error("❌ Error during code generation:", err);
-    }
-}
-
-// Run the generator
-generateCode();
+await CodeProjectGenerator({
+    apiKey:       process.env.GROK_API,
+    projectPrompt: PROJECT_PROMPT,
+    outputDir:    "./rue-lang",
+    projectMdPath: "./RueterProject.md",
+    onProgress(message) {
+        console.log(message)
+    },
+})

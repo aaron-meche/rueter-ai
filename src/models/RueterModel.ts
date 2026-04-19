@@ -7,10 +7,10 @@
 // Individual AI Model for single instances
 //
 
-import type { Provider, ModelInfo, ModelResult, HttpRequestFormat, RueterModelConfig } from "./Types.js"
-import { models } from "./Models.js"
-import { builders } from "./Builders.js"
-import { calculateUsageCost } from "./Helpers.js"
+import type { Provider, ModelInfo, ModelResult, HttpRequestFormat, RueterModelConfig } from "../const/Types.js"
+import { models } from "../const/Models.js"
+import { builders } from "../helpers/Builders.js"
+import { calculateUsageCost } from "../helpers/CostCalculator.js"
 
 export class RueterModel {
     // Model Type Config
@@ -54,7 +54,12 @@ export class RueterModel {
         }
         const response = await fetch(builder.url, options)
         if (!response.ok) {
-            throw new Error(`[${this.#provider}] HTTP ${response.status} - ${response.statusText}`)
+            let body = ""
+            try { body = await response.text() } catch { /* ignore */ }
+            throw new Error(
+                `[${this.#provider}] HTTP ${response.status} - ${response.statusText}` +
+                (body ? `\n${body}` : "")
+            )
         }
         return await response.json() as Record<string, unknown>
     }
