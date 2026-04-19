@@ -1,5 +1,5 @@
 //
-// types.ts
+// Types
 //
 // Rueter AI
 // created by Aaron Meche
@@ -30,6 +30,12 @@ export interface BuilderConfig {
     maxTokens: number
     temperature: number
     systemPrompt: string
+    topP?: number
+    topK?: number
+    frequencyPenalty?: number
+    presencePenalty?: number
+    stopSequences?: string[]
+    n?: number
 }
 export type BuilderFn = (config: BuilderConfig, prompt: string) => HttpRequestFormat
 export type Builders = Record<Provider, BuilderFn>
@@ -58,6 +64,12 @@ export interface RueterModelConfig {
     systemPrompt?: string;
     temperature?: number;
     maxTokens?: number;
+    topP?: number;
+    topK?: number;
+    frequencyPenalty?: number;
+    presencePenalty?: number;
+    stopSequences?: string[];
+    n?: number;
 }
 // Prompt Results
 export type RueterResults = Record<string, ModelResult>

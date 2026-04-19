@@ -1,5 +1,5 @@
 //
-// RueterModel.ts
+// Rueter Model
 //
 // Rueter AI
 // created by Aaron Meche
@@ -7,10 +7,10 @@
 // Individual AI Model for single instances
 //
 
-import type { Provider, ModelInfo, ModelResult, HttpRequestFormat, RueterModelConfig } from "./types.js"
-import { models } from "./models.js"
-import { builders } from "./builders.js"
-import { calculateUsageCost } from "./calculateUsageCost.js"
+import type { Provider, ModelInfo, ModelResult, HttpRequestFormat, RueterModelConfig } from "./Types.js"
+import { models } from "./Models.js"
+import { builders } from "./Builders.js"
+import { calculateUsageCost } from "./Helpers.js"
 
 export class RueterModel {
     // Model Type Config
@@ -21,14 +21,26 @@ export class RueterModel {
     #systemPrompt: string = ""
     #temperature: number = 0.7
     #maxTokens: number = 1024
+    #topP?: number
+    #topK?: number
+    #frequencyPenalty?: number
+    #presencePenalty?: number
+    #stopSequences?: string[]
+    #n?: number
 
     constructor(provider: Provider, apiKey: string, model: number = 0, config?: RueterModelConfig) {
         this.#provider = provider
         this.#apiKey = apiKey
         this.#model = models[provider][model]
         if (config?.systemPrompt) this.#systemPrompt = config.systemPrompt
-        if (config?.temperature) this.#temperature = config.temperature
+        if (config?.temperature !== undefined) this.#temperature = config.temperature
         if (config?.maxTokens) this.#maxTokens = config.maxTokens
+        if (config?.topP !== undefined) this.#topP = config.topP
+        if (config?.topK !== undefined) this.#topK = config.topK
+        if (config?.frequencyPenalty !== undefined) this.#frequencyPenalty = config.frequencyPenalty
+        if (config?.presencePenalty !== undefined) this.#presencePenalty = config.presencePenalty
+        if (config?.stopSequences !== undefined) this.#stopSequences = config.stopSequences
+        if (config?.n !== undefined) this.#n = config.n
     }
 
     async #httpRequest(builder: HttpRequestFormat): Promise<Record<string, unknown>> {
@@ -47,13 +59,19 @@ export class RueterModel {
         return await response.json() as Record<string, unknown>
     }
 
-    async prompt(prompt: string, returnJustText?: boolean): Promise<ModelResult> {
+    async prompt(prompt: string, returnJSON?: boolean): Promise<ModelResult> {
         const config = {
             apiKey: this.#apiKey,
             modelName: this.#model.name,
             maxTokens: this.#maxTokens,
             temperature: this.#temperature,
-            systemPrompt: this.#systemPrompt
+            systemPrompt: this.#systemPrompt,
+            topP: this.#topP,
+            topK: this.#topK,
+            frequencyPenalty: this.#frequencyPenalty,
+            presencePenalty: this.#presencePenalty,
+            stopSequences: this.#stopSequences,
+            n: this.#n,
         }
         const res = await this.#httpRequest(builders[this.#provider](config, prompt))
         const responseText =
@@ -62,8 +80,14 @@ export class RueterModel {
             (res.candidates as any)?.[0]?.content?.parts?.[0]?.text ??
             (res.output_text as string | undefined) ??
             JSON.stringify(res)
-        if (returnJustText) return responseText
-        return { res: responseText, cost: calculateUsageCost(res, this.#model) }
+        // Include Cost Information
+        if (returnJSON) {
+            return { res: responseText, cost: calculateUsageCost(res, this.#model) }
+        }
+        // Standard, Plaintext Response
+        else {
+            return responseText
+        }
     }
 
     setSystemPrompt(sysPrompt: string): void {

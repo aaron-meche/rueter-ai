@@ -1,11 +1,11 @@
 //
-// calculateUsageCost.ts
+// Helpers
 //
 // Rueter AI
 // created by Aaron Meche
 //
 
-import type { ModelInfo, UsageCost } from "./types.js"
+import type { ModelInfo, UsageCost } from "./Types.js"
 
 export function calculateUsageCost(res: Record<string, unknown>, model: ModelInfo): UsageCost {
     const usage = res?.usage as Record<string, number> | undefined

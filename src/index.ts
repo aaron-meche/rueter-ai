@@ -8,5 +8,5 @@
 export { RueterModel } from './RueterModel.js'; // Individual RueterModel
 export { Rueter } from './Rueter.js';           // Orechrator Model
 export * from './SpecialModels.js';             // Special Models
-export type * from './types.js';                // Defined Types
-export { calculateUsageCost } from './calculateUsageCost.js';
+export type * from './Types.js';                // Defined Types
+export { calculateUsageCost } from './Helpers.js';

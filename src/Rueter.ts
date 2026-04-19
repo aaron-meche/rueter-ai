@@ -1,5 +1,5 @@
 //
-// Rueter.js
+// Rueter
 //
 // Rueter AI
 // created by Aaron Meche
@@ -7,7 +7,7 @@
 // Orchastrator Class for multiple RueterModels
 //
 
-import type { Provider, RueterModelConfig, RueterResults } from "./types.js"
+import type { Provider, RueterModelConfig, RueterResults } from "./Types.js"
 import { RueterModel } from "./RueterModel.js"
 
 export class Rueter {

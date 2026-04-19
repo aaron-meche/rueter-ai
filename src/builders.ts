@@ -1,11 +1,11 @@
 //
-// builders.ts
+// Builders
 //
 // Rueter AI
 // created by Aaron Meche
 //
 
-import type { Builders, BuilderConfig, HttpRequestFormat } from "./types.js"
+import type { Builders, BuilderConfig, HttpRequestFormat } from "./Types.js"
 
 export const builders: Builders = {
     "anthropic": (config: BuilderConfig, prompt: string): HttpRequestFormat => ({
@@ -20,7 +20,10 @@ export const builders: Builders = {
             max_tokens: config.maxTokens,
             temperature: config.temperature,
             system: config.systemPrompt,
-            messages: [{ role: "user", content: prompt }]
+            messages: [{ role: "user", content: prompt }],
+            ...(config.topP !== undefined && { top_p: config.topP }),
+            ...(config.topK !== undefined && { top_k: config.topK }),
+            ...(config.stopSequences && { stop_sequences: config.stopSequences })
         }
     }),
     "grok": (config: BuilderConfig, prompt: string): HttpRequestFormat => ({
@@ -36,7 +39,12 @@ export const builders: Builders = {
                 { role: "user",   content: prompt }
             ],
             temperature: config.temperature,
-            max_tokens: config.maxTokens
+            max_tokens: config.maxTokens,
+            ...(config.topP !== undefined && { top_p: config.topP }),
+            ...(config.frequencyPenalty !== undefined && { frequency_penalty: config.frequencyPenalty }),
+            ...(config.presencePenalty !== undefined && { presence_penalty: config.presencePenalty }),
+            ...(config.stopSequences && { stop: config.stopSequences }),
+            ...(config.n !== undefined && { n: config.n })
         }
     }),
     "openai": (config: BuilderConfig, prompt: string): HttpRequestFormat => ({
@@ -52,7 +60,12 @@ export const builders: Builders = {
                 { role: "user",   content: prompt }
             ],
             temperature: config.temperature,
-            max_tokens: config.maxTokens
+            max_tokens: config.maxTokens,
+            ...(config.topP !== undefined && { top_p: config.topP }),
+            ...(config.frequencyPenalty !== undefined && { frequency_penalty: config.frequencyPenalty }),
+            ...(config.presencePenalty !== undefined && { presence_penalty: config.presencePenalty }),
+            ...(config.stopSequences && { stop: config.stopSequences }),
+            ...(config.n !== undefined && { n: config.n })
         }
     }),
     "gemini": (config: BuilderConfig, prompt: string): HttpRequestFormat => ({
@@ -65,7 +78,11 @@ export const builders: Builders = {
             contents: [{ role: "user", parts: [{ text: prompt }] }],
             generationConfig: {
                 temperature: config.temperature,
-                maxOutputTokens: config.maxTokens
+                maxOutputTokens: config.maxTokens,
+                ...(config.topP !== undefined && { topP: config.topP }),
+                ...(config.topK !== undefined && { topK: config.topK }),
+                ...(config.stopSequences && { stopSequences: config.stopSequences }),
+                ...(config.n !== undefined && { candidateCount: config.n })
             },
             ...(config.systemPrompt && {
                 systemInstruction: { parts: [{ text: config.systemPrompt }] }

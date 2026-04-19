@@ -1,11 +1,11 @@
 //
-// models.ts
+// Models
 //
 // Rueter AI
 // created by Aaron Meche
 //
 
-import type { Models } from "./types.js"
+import type { Models } from "./Types.js"
 
 export const models: Models = {
     "anthropic": [
