@@ -8,6 +8,7 @@
 export { RueterModel } from './models/RueterModel.js'; // Individual RueterModel
 export { Rueter } from './models/Rueter.js';           // Orchestrator Model
 export * from './models/SpecialModels.js';             // Special Models
-export * from './pipelines/Workflows.js';                 // Workflows
+export * from './pipelines/Workflows.js';              // Workflows
+export * from './functions/GhostWriter.js';            // Functions
 export type * from './const/Types.js';                 // Defined Types
 export { calculateUsageCost } from './helpers/CostCalculator.js';

@@ -64,7 +64,9 @@ export class RueterModel {
         return await response.json() as Record<string, unknown>
     }
 
-    async prompt(prompt: string, returnJSON?: boolean): Promise<ModelResult> {
+    async prompt(prompt: string, returnJSON: true): Promise<ModelResult>
+    async prompt(prompt: string, returnJSON?: false): Promise<string>
+    async prompt(prompt: string, returnJSON?: boolean): Promise<ModelResult | string> {
         const config = {
             apiKey: this.#apiKey,
             modelName: this.#model.name,

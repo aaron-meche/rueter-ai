@@ -1,0 +1,22 @@
+//
+// Ghost Writer
+//
+// Rueter AI
+// created by Aaron Meche
+//
+
+import "dotenv/config"
+import { GhostWriter } from "rueter-ai"
+
+const previous_writings = [
+    `Hey Catherine, great video and smart idea! It would be amazing to have a simple "clip" to attach to my hair to help me stay focused on tasks I really don't want to do! It's a simple concept, and you showcased how it would work very well. Spoke clearly, easy to understand, great lighting, awesome video!`,
+    `Hey Haley, great idea! I also struggle with the problem of quickly throwing plastic bags in a cabinet and quickly shutting the door, but have just accepted this as reality and haven't thought anymore about it. I love this idea because it is ACTUALLY useful, and can be applied very easily, I am actually going to start using the "product" for my own plastic bag collection! It is not only a convenient storage location, but it makes access also very simple and convenient. Great idea, and awesome showcase video!`,
+    `Don't take nose for an answer! This video is hilarious, the voice you added was fantastic and really completed the persuasive element of this video! I very much enjoyed watching this, and this product would prove to be extremely useful if it really existed. The "price" of this product was hilarious, your delivery was great, and overall you did an amazing job with this showcase. Great job!`,
+    `Hey Tess, great idea, I love how you made the connection to "horse blinders", for some reason this really helped me understand how these (theoretically) would work, and I love the phrase: "your thoughts feels clearer, and you look pretty good while doing it"... I need that in my life! Awesome concept, you sold it well, very useful purpose, I think lots of people would see this and go "I need that!". Overall, nice video, great job!`,
+    `Hey Sophia, great concept with an extremely useful purpose! You sold it well, and I think its a fantastic idea that it truly solves a real life problem (assuming it existed), great job!`,
+    `Hey Nil, great concept! I love how you connected the idea of being distraction free with maintaining hydration! I think it really helped sell your case for why a water bottle that stops distractions makes sense--better hydration = better focus and cognitive performance! This was a great idea, and I certainly need one of these in my life! Smart concept and good execution, great job!`
+]
+
+const assignment = "Write a similar comment for the following post, from an unrelated assignment: The year is 2057, and I just traded my last working iPhone for half a sandwich. No meat, no cheese just vibes. My name’s Kris, and I’m from about 30 years in your future. I didn’t exactly plan this trip, but something went so wrong in my timeline that I ended up back here to warn you. And yeah… it starts with you. Right now, people don’t take burnout, screen addiction, or mental health seriously enough. Being “chronically online” has somehow become normal. But it’s not. According to the American Psychological Association, over 75% of young adults report regular stress symptoms. Think about how often you grab your phone for one quick thing and lose two hours without even noticing. It feels harmless, but it’s not. In my future, people don’t hang out anymore, they schedule interactions like meetings. Most relationships are digital, and people forget how to have real conversations. Studies from the Pew Research Center show screen time and isolation have been rising for years, and where I’m from, it only gets worse. I had a friend who couldn’t talk for more than thirty seconds without checking his phone. We’d sit across from each other… texting. But it doesn’t have to end like that. You can fix it. Set real boundaries with your phone. Do things that aren’t online. Actually talk to people. Experts from the American Psychological Association say habits like limiting screen time and building real connections can reduce stress and improve your life. I didn’t come back just to scare you, this future is avoidable. The problem isn’t technology, it’s how much control you’ve given it. So the choice is yours: fix it now… or I’ll see you in 2057, where your best friend is your screen time report. And trust me, it doesn’t care about you."
+
+await GhostWriter(process.env.GROK_API, previous_writings, assignment)

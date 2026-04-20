@@ -30,7 +30,7 @@ export class Rueter {
             this.#models.map(async (model) => {
                 const id = model.getID();
                 try {
-                    const { res, cost } = await model.prompt(prompt);
+                    const { res, cost } = await model.prompt(prompt, true);
                     results[id] = { res, cost };
                 } catch (error) {
                     const msg = error instanceof Error ? error.message : String(error);
