@@ -1,33 +1,45 @@
-import type { CommandDefinition } from "../types.js"
+import type { CommandDefinition, ModelExecutionResult, OrchestratorExecutionResult, SavedModelRecord, SavedOrchestratorRecord } from "../types.js"
 import { formatProviderName, type IndexedModelInfo } from "../core/catalog.js"
 import { padRight, rule, theme } from "./theme.js"
 
 export function renderRootHelp(version: string, commands: readonly CommandDefinition[]): string {
-    const rows = commands.map(command => ({
-        label: command.path.join(" "),
-        value: command.summary,
-    }))
+    const grouped = groupCommands(commands)
 
     return [
-        renderHeader("Rueter CLI", `v${version}  |  Phase 1 scaffold`),
-        "A polished terminal foundation for rueter-ai.",
+        renderHeader("Rueter CLI", `v${version}`),
+        "A production CLI for the rueter-ai package.",
         "",
-        renderSubsection("Available Commands"),
-        renderKeyValueRows(rows),
+        renderSubsection("Command Groups"),
+        renderKeyValueRows([
+            { label: "doctor", value: "Inspect runtime, config scopes, and provider readiness." },
+            { label: "config", value: "Initialize and inspect CLI storage." },
+            { label: "models", value: "Create, inspect, run, and manage saved RueterModel definitions." },
+            { label: "orchestrators", value: "Create and run saved multi-model Rueter orchestrators." },
+            { label: "ask", value: "Run one-off prompts without saving a definition first." },
+            { label: "presets", value: "Run built-in specialized model factories." },
+            { label: "workflows", value: "Run higher-level exported package workflows." },
+        ]),
         "",
+        ...grouped.map(([group, entries]) => [
+            renderSubsection(group),
+            renderKeyValueRows(entries.map(entry => ({
+                label: entry.path.join(" "),
+                value: entry.summary,
+            }))),
+            "",
+        ].join("\n")),
         renderSubsection("Examples"),
         "  rueter doctor",
-        "  rueter config init",
-        "  rueter config init --scope global",
-        "  rueter models catalog",
-        "  rueter models catalog --provider openai",
-        "  rueter models catalog --interactive",
+        "  rueter models create",
+        "  rueter models run my-model --prompt \"Explain ACID transactions.\"",
+        "  rueter orchestrators create",
+        "  rueter ask --provider openai --model gpt-5.4 --prompt \"Summarize this file.\"",
+        "  rueter presets run simple-answer --prompt \"Capital of Japan\"",
         "",
         renderSubsection("Global Flags"),
         "  --help, -h       Show help",
         "  --version, -v    Show package version",
-        "",
-        theme.muted("Only the foundation commands are live in this first scaffold."),
+        "  --json, -j       Output machine-readable JSON when supported",
     ].join("\n")
 }
 
@@ -36,9 +48,7 @@ export function renderCommandHelp(command: CommandDefinition): string {
         renderHeader(`rueter ${command.path.join(" ")}`, command.summary),
     ]
 
-    if (command.description) {
-        lines.push(command.description)
-    }
+    if (command.description) lines.push(command.description)
 
     if (command.usage) {
         lines.push("")
@@ -49,12 +59,10 @@ export function renderCommandHelp(command: CommandDefinition): string {
     if (command.options && command.options.length > 0) {
         lines.push("")
         lines.push(renderSubsection("Options"))
-        lines.push(renderKeyValueRows(
-            command.options.map(option => ({
-                label: option.flag,
-                value: option.description,
-            }))
-        ))
+        lines.push(renderKeyValueRows(command.options.map(option => ({
+            label: option.flag,
+            value: option.description,
+        }))))
     }
 
     if (command.examples && command.examples.length > 0) {
@@ -79,9 +87,7 @@ export function renderSubsection(title: string): string {
 
 export function renderKeyValueRows(rows: Array<{ label: string; value: string }>): string {
     const labelWidth = Math.max(...rows.map(row => row.label.length), 0)
-    return rows
-        .map(row => `  ${padRight(row.label, labelWidth)}  ${row.value}`)
-        .join("\n")
+    return rows.map(row => `  ${padRight(row.label, labelWidth)}  ${row.value}`).join("\n")
 }
 
 export function renderBulletList(values: readonly string[]): string {
@@ -126,6 +132,118 @@ export function renderModelDetail(model: IndexedModelInfo): string {
     ].join("\n")
 }
 
+export function renderSavedModelList(records: readonly SavedModelRecord[]): string {
+    if (records.length === 0) return theme.muted("No saved models were found.")
+
+    return records
+        .map(record => {
+            const provider = formatProviderName(record.definition.provider)
+            return [
+                `${theme.bold(record.definition.name)} ${theme.muted(`(${record.scope})`)}`,
+                `  ${provider} · [${record.definition.modelIndex}] ${record.definition.modelName}`,
+                `  env: ${record.definition.apiKeyEnv}`,
+            ].join("\n")
+        })
+        .join("\n\n")
+}
+
+export function renderSavedModelDetail(record: SavedModelRecord): string {
+    const configRows = buildConfigRows(record.definition.config)
+    return [
+        renderHeader(`Saved Model: ${record.definition.name}`, `${record.scope} scope`),
+        renderKeyValueRows([
+            { label: "provider", value: formatProviderName(record.definition.provider) },
+            { label: "model", value: `[${record.definition.modelIndex}] ${record.definition.modelName}` },
+            { label: "api env", value: record.definition.apiKeyEnv },
+            { label: "file", value: record.filePath },
+            { label: "updated", value: record.definition.updatedAt },
+        ]),
+        "",
+        renderSubsection("Config"),
+        configRows.length > 0 ? renderKeyValueRows(configRows) : "  No custom model config saved.",
+    ].join("\n")
+}
+
+export function renderSavedOrchestratorList(records: readonly SavedOrchestratorRecord[]): string {
+    if (records.length === 0) return theme.muted("No saved orchestrators were found.")
+
+    return records
+        .map(record => [
+            `${theme.bold(record.definition.name)} ${theme.muted(`(${record.scope})`)}`,
+            `  models: ${record.definition.models.map(model => `${model.name} [${model.scope}]`).join(", ")}`,
+        ].join("\n"))
+        .join("\n\n")
+}
+
+export function renderSavedOrchestratorDetail(record: SavedOrchestratorRecord): string {
+    const configRows = buildConfigRows(record.definition.config)
+    return [
+        renderHeader(`Saved Orchestrator: ${record.definition.name}`, `${record.scope} scope`),
+        renderKeyValueRows([
+            { label: "models", value: String(record.definition.models.length) },
+            { label: "file", value: record.filePath },
+            { label: "updated", value: record.definition.updatedAt },
+        ]),
+        "",
+        renderSubsection("Model References"),
+        renderBulletList(record.definition.models.map(model => `${model.name} (${model.scope})`)),
+        "",
+        renderSubsection("Shared Config"),
+        configRows.length > 0 ? renderKeyValueRows(configRows) : "  No shared config saved.",
+    ].join("\n")
+}
+
+export function renderModelExecutionResult(execution: ModelExecutionResult): string {
+    const cost = execution.result.cost
+    const metadataRows = [
+        { label: "name", value: execution.name },
+        { label: "provider", value: formatProviderName(execution.provider) },
+        { label: "model", value: execution.modelName },
+        { label: "duration", value: formatDuration(execution.durationMs) },
+    ]
+
+    if (cost) metadataRows.push({ label: "cost", value: `$${cost.total} total` })
+
+    return [
+        renderHeader("Model Result", `${execution.name} · ${execution.modelName}`),
+        renderKeyValueRows(metadataRows),
+        "",
+        renderSubsection("Response"),
+        execution.result.res ?? theme.warning("No response text returned."),
+        execution.result.error
+            ? `\n\n${renderSubsection("Error")}\n${theme.danger(execution.result.error)}`
+            : "",
+        cost
+            ? `\n\n${renderSubsection("Cost Breakdown")}\n${renderKeyValueRows([
+                { label: "input", value: `$${cost.input}` },
+                { label: "output", value: `$${cost.output}` },
+                { label: "total", value: `$${cost.total}` },
+            ])}`
+            : "",
+    ].join("")
+}
+
+export function renderOrchestratorExecutionResult(execution: OrchestratorExecutionResult): string {
+    const ids = Object.keys(execution.result).sort((left, right) => left.localeCompare(right))
+    const panels = ids.map(id => {
+        const modelResult = execution.result[id]
+        const header = `${theme.bold(id)} ${modelResult.error ? theme.danger("[error]") : theme.success("[ok]")}`
+        const lines = [header]
+
+        if (modelResult.res) lines.push(`  ${modelResult.res.replace(/\n/g, "\n  ")}`)
+        if (modelResult.error) lines.push(`  ${theme.danger(modelResult.error)}`)
+        if (modelResult.cost) lines.push(`  cost: $${modelResult.cost.total} total`)
+
+        return lines.join("\n")
+    })
+
+    return [
+        renderHeader("Orchestrator Result", `${execution.name} · ${formatDuration(execution.durationMs)}`),
+        renderSubsection("Responses"),
+        panels.join("\n\n"),
+    ].join("\n")
+}
+
 export function renderJson(value: unknown): string {
     return JSON.stringify(value, null, 2)
 }
@@ -134,6 +252,35 @@ export function renderTip(message: string): string {
     return theme.muted(`Tip: ${message}`)
 }
 
+function buildConfigRows(config: object): Array<{ label: string; value: string }> {
+    return Object.entries(config as Record<string, unknown>)
+        .filter(([, value]) => value !== undefined)
+        .map(([key, value]) => ({
+            label: key,
+            value: Array.isArray(value) ? value.join(", ") : String(value),
+        }))
+}
+
+function groupCommands(commands: readonly CommandDefinition[]): Array<[string, readonly CommandDefinition[]]> {
+    const groups = new Map<string, CommandDefinition[]>()
+    for (const command of commands) {
+        const key = command.path[0]
+        const items = groups.get(key) ?? []
+        items.push(command)
+        groups.set(key, items)
+    }
+
+    return [...groups.entries()].map(([group, entries]) => [
+        group,
+        [...entries].sort((left, right) => left.path.join(" ").localeCompare(right.path.join(" "))),
+    ])
+}
+
 function formatInteger(value: number): string {
     return new Intl.NumberFormat("en-US").format(value)
+}
+
+function formatDuration(value: number): string {
+    if (value < 1000) return `${value.toFixed(0)}ms`
+    return `${(value / 1000).toFixed(2)}s`
 }

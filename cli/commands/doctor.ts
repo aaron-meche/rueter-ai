@@ -7,8 +7,8 @@ import type { CommandDefinition } from "../types.js"
 
 export const doctorCommand: CommandDefinition = {
     path: ["doctor"],
-    summary: "Inspect the CLI foundation, config locations, and provider readiness.",
-    description: "Shows the package version, terminal capabilities, config directories, API key availability, and the built-in model catalog summary.",
+    summary: "Inspect runtime, config locations, and provider readiness.",
+    description: "Shows the package version, terminal capabilities, config directories, API key availability, and the built-in provider/model catalog summary.",
     usage: "rueter doctor [--json]",
     options: [
         { flag: "--json", description: "Output the doctor report as JSON." },

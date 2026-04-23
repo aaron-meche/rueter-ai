@@ -6,6 +6,7 @@ const SHORT_FLAG_ALIASES: Record<string, string> = {
     i: "interactive",
     j: "json",
     f: "force",
+    y: "yes",
 }
 
 export function parseInvocation(commands: readonly CommandDefinition[], argv: string[]): ParsedInvocation {

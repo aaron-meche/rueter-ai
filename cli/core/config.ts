@@ -3,19 +3,8 @@ import * as nodePath from "node:path"
 import * as os from "node:os"
 
 import { CliError } from "./errors.js"
-
-export type CliScope = "local" | "global"
-
-export interface CliConfigFile {
-    version: number
-    scope: CliScope
-    createdAt: string
-    updatedAt: string
-    defaults: {
-        outputFormat: "pretty"
-        interactive: true
-    }
-}
+import type { CliConfigFile, CliScope } from "../types.js"
+export type { CliScope } from "../types.js"
 
 export interface ScopePathInfo {
     scope: CliScope
@@ -118,7 +107,6 @@ function buildConfigFile(scope: CliScope): CliConfigFile {
     const now = new Date().toISOString()
     return {
         version: 1,
-        scope,
         createdAt: now,
         updatedAt: now,
         defaults: {

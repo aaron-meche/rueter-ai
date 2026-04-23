@@ -1,4 +1,5 @@
 import type { Provider } from "../../src/const/Types.js"
+import { CliError } from "./errors.js"
 
 export const providerApiKeyEnvVars: Record<Provider, string[]> = {
     anthropic: ["ANTHROPIC_API_KEY"],
@@ -26,4 +27,17 @@ export function getProviderEnvStatuses(): ProviderEnvStatus[] {
             ready: envVars.some(name => Boolean(process.env[name])),
         }
     })
+}
+
+export function resolveApiKeyEnv(provider: Provider, explicitEnv?: string): string {
+    if (explicitEnv) return explicitEnv
+    const candidates = providerApiKeyEnvVars[provider]
+    return candidates.find(candidate => Boolean(process.env[candidate])) ?? candidates[0]
+}
+
+export function resolveApiKeyValue(provider: Provider, explicitEnv?: string): { envName: string; apiKey: string } {
+    const envName = resolveApiKeyEnv(provider, explicitEnv)
+    const apiKey = process.env[envName]
+    if (!apiKey) throw new CliError(`Environment variable "${envName}" is not set for provider "${provider}".`)
+    return { envName, apiKey }
 }

@@ -34,7 +34,31 @@ On top of that core, the package also exports:
 npm install rueter-ai
 ```
 
+Global CLI install:
+
+```bash
+sudo npm i -g rueter-ai
+```
+
 Use whatever environment-loading strategy your app already prefers. The examples below assume API keys are already available on `process.env`.
+
+## CLI
+
+The package now ships a global `rueter` terminal command.
+
+Common commands:
+
+```bash
+rueter doctor
+rueter models catalog
+rueter models create
+rueter models run my-model --prompt "Explain optimistic locking."
+rueter orchestrators create
+rueter presets list
+rueter workflows list
+```
+
+The CLI automatically loads environment variables from a local `.env` file via `dotenv` when you run it in a project directory.
 
 ## Quick Start
 
@@ -65,9 +89,9 @@ console.log(detailed)
   res: string | null
   cost: {
     model: string
-    input: number
-    output: number
-    total: number
+    input: string
+    output: string
+    total: string
   } | null
   error?: string
 }

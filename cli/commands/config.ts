@@ -1,13 +1,13 @@
 import type { CommandDefinition } from "../types.js"
 import { initializeCliConfig, inspectAllScopes, type CliScope } from "../core/config.js"
 import { CliError } from "../core/errors.js"
-import { renderBulletList, renderHeader, renderJson, renderKeyValueRows, renderStatus, renderSubsection, renderTip } from "../ui/render.js"
+import { renderBulletList, renderHeader, renderJson, renderKeyValueRows, renderStatus, renderSubsection } from "../ui/render.js"
 import { selectOption } from "../ui/select.js"
 
 const configInitCommand: CommandDefinition = {
     path: ["config", "init"],
-    summary: "Create the CLI's local or global storage scaffold.",
-    description: "Creates the root CLI directory plus models, orchestrators, history, and sessions folders. If no scope is passed in an interactive terminal, a highlighted selector will ask where to initialize.",
+    summary: "Create the CLI's local or global storage directories.",
+    description: "Creates the root CLI directory plus models, orchestrators, history, and sessions folders. If no scope is passed in an interactive terminal, a highlighted selector asks where the CLI should store definitions.",
     usage: "rueter config init [--scope local|global] [--force] [--json]",
     options: [
         { flag: "--scope <local|global>", description: "Choose where the CLI scaffold should be created." },
@@ -47,8 +47,6 @@ const configInitCommand: CommandDefinition = {
             renderKeyValueRows(summaryRows),
             "",
             createdDirsBlock.trimEnd(),
-            "",
-            renderTip("This is only the foundation scaffold. Saved models and orchestrators come in the next build step."),
         ].join("\n"))
 
         return 0

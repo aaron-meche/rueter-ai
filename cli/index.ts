@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import "dotenv/config"
+
 import { commands } from "./commands/index.js"
 import { CliError } from "./core/errors.js"
 import { getPackageMeta } from "./core/package-meta.js"
