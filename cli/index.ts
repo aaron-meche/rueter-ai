@@ -10,7 +10,10 @@ import { renderCommandHelp, renderHeader, renderJson, renderRootHelp } from "./u
 import { theme } from "./ui/theme.js"
 
 async function main(): Promise<void> {
-    const invocation = parseInvocation(commands, process.argv.slice(2))
+    const argv = process.argv.slice(2)
+    if (argv.includes("--no-color")) process.env.NO_COLOR = "1"
+
+    const invocation = parseInvocation(commands, argv)
 
     if (invocation.kind === "version") {
         const packageMeta = await getPackageMeta()

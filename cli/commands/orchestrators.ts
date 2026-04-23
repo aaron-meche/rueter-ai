@@ -1,6 +1,7 @@
 import type { CliScope, CommandDefinition, SavedModelRef } from "../types.js"
 import { CliError } from "../core/errors.js"
 import { readBooleanFlag, readCsvFlag, readIntegerFlag, readNumberFlag, readStringFlag, requirePositionalArg } from "../core/flags.js"
+import { recordHistory } from "../core/history.js"
 import { resolvePromptText } from "../core/input.js"
 import {
     buildModelReferenceList,
@@ -15,6 +16,7 @@ import {
     renderHeader,
     renderJson,
     renderOrchestratorExecutionResult,
+    renderRawOrchestratorResult,
     renderSavedOrchestratorDetail,
     renderSavedOrchestratorList,
     renderTip,
@@ -128,12 +130,14 @@ export const orchestratorCommands: readonly CommandDefinition[] = [
         path: ["orchestrators", "run"],
         summary: "Run a prompt against one saved orchestrator.",
         description: "Loads the saved orchestrator, resolves each referenced model, fans the prompt out across them in parallel, and renders all responses together.",
-        usage: "rueter orchestrators run <name> [--scope <local|global>] [--prompt <text> | --file <path> | --stdin] [--json]",
+        usage: "rueter orchestrators run <name> [--scope <local|global>] [--prompt <text> | --file <path> | --stdin] [--raw] [--json]",
         options: [
             { flag: "--scope <local|global>", description: "Resolve the orchestrator from one scope only." },
             { flag: "--prompt <text>", description: "Prompt text to send." },
             { flag: "--file <path>", description: "Read prompt text from a file." },
             { flag: "--stdin", description: "Read prompt text from stdin." },
+            { flag: "--raw", description: "Print only model ids and response text." },
+            { flag: "--no-history", description: "Do not record this run in local CLI history." },
             { flag: "--json", description: "Output the response object as JSON." },
         ],
         examples: [
@@ -146,9 +150,21 @@ export const orchestratorCommands: readonly CommandDefinition[] = [
             const record = await resolveSavedOrchestrator(name, context.cwd, scope)
             const prompt = await resolvePromptText({ ...context, args: context.args.slice(1) }, 0, "Enter the prompt for this orchestrator")
             const execution = await executeSavedOrchestratorPrompt(record, prompt)
+            await recordHistory(context, {
+                targetType: "orchestrator",
+                targetName: record.definition.name,
+                prompt,
+                durationMs: execution.durationMs,
+                result: execution,
+            })
 
             if (context.flags.json === true) {
                 console.log(renderJson(execution))
+                return 0
+            }
+
+            if (context.flags.raw === true) {
+                console.log(renderRawOrchestratorResult(execution))
                 return 0
             }
 

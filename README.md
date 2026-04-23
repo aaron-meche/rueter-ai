@@ -56,9 +56,11 @@ rueter models run my-model --prompt "Explain optimistic locking."
 rueter orchestrators create
 rueter presets list
 rueter workflows list
+rueter ghostwriter run --history-file ./samples.txt --prompt "Write a project update."
+rueter history list
 ```
 
-The CLI automatically loads environment variables from a local `.env` file via `dotenv` when you run it in a project directory.
+The CLI automatically loads environment variables from a local `.env` file via `dotenv` when you run it in a project directory. Prompt-producing commands record local run history under `.rueter/history/` by default; pass `--no-history` for private one-off runs.
 
 ## Quick Start
 
@@ -412,7 +414,12 @@ Important: the current workflow implementations use the specialized model preset
 The package also exports:
 
 ```ts
-GhostWriter(apiKey: string, history: string[], prompt: string): Promise<string>
+GhostWriter(
+  apiKey: string,
+  history: string[],
+  prompt: string,
+  options?: { log?: boolean }
+): Promise<string>
 ```
 
 This helper analyzes previous writing samples and then generates a new piece in a similar voice using `WritingStyleAnalyzerModel` and `StyleReplicatorModel`.
@@ -431,13 +438,14 @@ const history = [
 const output = await GhostWriter(
   process.env.GROK_API!,
   history,
-  "Write a new paragraph in this style about solar energy."
+  "Write a new paragraph in this style about solar energy.",
+  { log: false }
 )
 
 console.log(output)
 ```
 
-Note: the current `GhostWriter` implementation logs the generated style guide and output to the console as part of its execution.
+Pass `{ log: true }` if you want `GhostWriter` to print the generated style guide and replicated output while it runs.
 
 ## Exported Types
 

@@ -1,7 +1,10 @@
+import { performance } from "node:perf_hooks"
+
 import type { CommandDefinition } from "../types.js"
 import { resolveApiKeyValue } from "../core/env.js"
 import { CliError } from "../core/errors.js"
 import { readStringFlag } from "../core/flags.js"
+import { recordHistory } from "../core/history.js"
 import { listWorkflows, resolveWorkflow } from "../core/workflows.js"
 import { renderHeader, renderJson } from "../ui/render.js"
 import { selectOption } from "../ui/select.js"
@@ -44,6 +47,7 @@ export const workflowCommands: readonly CommandDefinition[] = [
         usage: "rueter workflows run <name> [workflow-specific flags] [--api-key-env <ENV>] [--json]",
         options: [
             { flag: "--api-key-env <ENV>", description: "Explicit env var containing the Grok/xAI API key." },
+            { flag: "--no-history", description: "Do not record this workflow run in local CLI history." },
             { flag: "--json", description: "Output the workflow result as JSON." },
         ],
         examples: [
@@ -61,7 +65,21 @@ export const workflowCommands: readonly CommandDefinition[] = [
                 if (context.flags.json !== true) console.log(message)
             }
 
+            const startedAt = performance.now()
             const result = await workflow.run(context.flags, { apiKey, onProgress })
+            const durationMs = performance.now() - startedAt
+            await recordHistory(context, {
+                targetType: "workflow",
+                targetName: workflow.key,
+                prompt: readStringFlag(context.flags, "prompt") ?? readStringFlag(context.flags, "topic"),
+                durationMs,
+                result: {
+                    workflow: workflow.key,
+                    apiKeyEnv: envName,
+                    result,
+                    progress,
+                },
+            })
 
             if (context.flags.json === true) {
                 console.log(renderJson({
@@ -69,6 +87,7 @@ export const workflowCommands: readonly CommandDefinition[] = [
                     apiKeyEnv: envName,
                     result,
                     progress,
+                    durationMs,
                 }))
                 return 0
             }

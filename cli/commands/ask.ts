@@ -5,19 +5,26 @@ import { formatProviderName, getIndexedModels, getModelSelectOptions, getProvide
 import { resolveApiKeyValue } from "../core/env.js"
 import { CliError } from "../core/errors.js"
 import { readIntegerFlag, readStringFlag } from "../core/flags.js"
+import { recordHistory } from "../core/history.js"
 import { resolvePromptText } from "../core/input.js"
 import { getModelConfigFromFlags } from "../core/models.js"
 import { resolveSavedOrchestrator } from "../core/orchestrators.js"
 import { executeAdHocModelPrompt, executeSavedModelPrompt, executeSavedOrchestratorPrompt } from "../core/runtime.js"
 import { resolveSavedModel } from "../core/models.js"
-import { renderJson, renderModelExecutionResult, renderOrchestratorExecutionResult } from "../ui/render.js"
+import {
+    renderJson,
+    renderModelExecutionResult,
+    renderOrchestratorExecutionResult,
+    renderRawModelResult,
+    renderRawOrchestratorResult,
+} from "../ui/render.js"
 import { selectOption } from "../ui/select.js"
 
 export const askCommand: CommandDefinition = {
     path: ["ask"],
     summary: "Run a one-off prompt with a saved model, saved orchestrator, or ad hoc provider/model.",
     description: "Use this for quick terminal prompting without first creating a saved definition. It can target a saved model, a saved orchestrator, or a direct provider + built-in model selection.",
-    usage: "rueter ask [--model <saved-name> | --orchestrator <saved-name> | --provider <provider> --index <n>|--model-name <name>] [--prompt <text> | --file <path> | --stdin] [--json]",
+    usage: "rueter ask [--model <saved-name> | --orchestrator <saved-name> | --provider <provider> --index <n>|--model-name <name>] [--prompt <text> | --file <path> | --stdin] [--raw] [--json]",
     options: [
         { flag: "--model <name>", description: "Saved model name when no provider is specified, or exact built-in model name when --provider is present." },
         { flag: "--orchestrator <name>", description: "Saved orchestrator name." },
@@ -28,6 +35,8 @@ export const askCommand: CommandDefinition = {
         { flag: "--prompt <text>", description: "Prompt text to send." },
         { flag: "--file <path>", description: "Read prompt text from a file." },
         { flag: "--stdin", description: "Read prompt text from stdin." },
+        { flag: "--raw", description: "Print only response text." },
+        { flag: "--no-history", description: "Do not record this run in local CLI history." },
         { flag: "--json", description: "Output the response as JSON." },
     ],
     examples: [
@@ -44,7 +53,15 @@ export const askCommand: CommandDefinition = {
         if (savedOrchestratorName) {
             const record = await resolveSavedOrchestrator(savedOrchestratorName, context.cwd)
             const execution = await executeSavedOrchestratorPrompt(record, prompt)
+            await recordHistory(context, {
+                targetType: "ask",
+                targetName: `orchestrator:${record.definition.name}`,
+                prompt,
+                durationMs: execution.durationMs,
+                result: execution,
+            })
             if (context.flags.json === true) console.log(renderJson(execution))
+            else if (context.flags.raw === true) console.log(renderRawOrchestratorResult(execution))
             else console.log(renderOrchestratorExecutionResult(execution))
             return 0
         }
@@ -52,7 +69,17 @@ export const askCommand: CommandDefinition = {
         if (!providerFlag && modelFlag) {
             const record = await resolveSavedModel(modelFlag, context.cwd)
             const execution = await executeSavedModelPrompt(record, prompt)
+            await recordHistory(context, {
+                targetType: "ask",
+                targetName: `model:${record.definition.name}`,
+                provider: record.definition.provider,
+                modelName: record.definition.modelName,
+                prompt,
+                durationMs: execution.durationMs,
+                result: execution,
+            })
             if (context.flags.json === true) console.log(renderJson(execution))
+            else if (context.flags.raw === true) console.log(renderRawModelResult(execution))
             else console.log(renderModelExecutionResult(execution))
             return 0
         }
@@ -71,12 +98,26 @@ export const askCommand: CommandDefinition = {
             config,
             prompt,
         })
+        await recordHistory(context, {
+            targetType: "ask",
+            targetName: `${provider}:${selection.name}`,
+            provider,
+            modelName: selection.name,
+            prompt,
+            durationMs: execution.durationMs,
+            result: execution,
+        })
 
         if (context.flags.json === true) {
             console.log(renderJson({
                 apiKeyEnv: envName,
                 ...execution,
             }))
+            return 0
+        }
+
+        if (context.flags.raw === true) {
+            console.log(renderRawModelResult(execution))
             return 0
         }
 

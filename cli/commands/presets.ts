@@ -2,9 +2,10 @@ import type { CommandDefinition } from "../types.js"
 import { resolveApiKeyValue } from "../core/env.js"
 import { CliError } from "../core/errors.js"
 import { readStringFlag } from "../core/flags.js"
+import { recordHistory } from "../core/history.js"
 import { resolvePromptText } from "../core/input.js"
 import { listPresets, resolvePreset } from "../core/presets.js"
-import { renderHeader, renderJson, renderModelExecutionResult } from "../ui/render.js"
+import { renderHeader, renderJson, renderModelExecutionResult, renderRawModelResult } from "../ui/render.js"
 import { selectOption } from "../ui/select.js"
 import { performance } from "node:perf_hooks"
 
@@ -38,12 +39,14 @@ export const presetCommands: readonly CommandDefinition[] = [
         path: ["presets", "run"],
         summary: "Run one built-in specialized model preset.",
         description: "Instantiates one preset model factory, resolves a Grok/xAI API key from the environment, sends a prompt, and prints the result.",
-        usage: "rueter presets run <name> [--api-key-env <ENV>] [--prompt <text> | --file <path> | --stdin] [--json]",
+        usage: "rueter presets run <name> [--api-key-env <ENV>] [--prompt <text> | --file <path> | --stdin] [--raw] [--json]",
         options: [
             { flag: "--api-key-env <ENV>", description: "Explicit env var containing the Grok/xAI API key." },
             { flag: "--prompt <text>", description: "Prompt text to send." },
             { flag: "--file <path>", description: "Read prompt text from a file." },
             { flag: "--stdin", description: "Read prompt text from stdin." },
+            { flag: "--raw", description: "Print only the model response text." },
+            { flag: "--no-history", description: "Do not record this run in local CLI history." },
             { flag: "--json", description: "Output the response as JSON." },
         ],
         examples: [
@@ -69,9 +72,23 @@ export const presetCommands: readonly CommandDefinition[] = [
                 result,
                 apiKeyEnv: envName,
             }
+            await recordHistory(context, {
+                targetType: "preset",
+                targetName: preset.key,
+                provider: "grok",
+                modelName: preset.exportName,
+                prompt,
+                durationMs,
+                result: execution,
+            })
 
             if (context.flags.json === true) {
                 console.log(renderJson(execution))
+                return 0
+            }
+
+            if (context.flags.raw === true) {
+                console.log(renderRawModelResult(execution))
                 return 0
             }
 

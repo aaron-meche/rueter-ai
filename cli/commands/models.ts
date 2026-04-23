@@ -30,11 +30,13 @@ import {
     renderModelDetail,
     renderModelExecutionResult,
     renderProviderCatalog,
+    renderRawModelResult,
     renderSavedModelDetail,
     renderSavedModelList,
     renderSubsection,
     renderTip,
 } from "../ui/render.js"
+import { recordHistory } from "../core/history.js"
 import { promptConfirm, promptNumber, promptText } from "../ui/prompt.js"
 import { selectOption } from "../ui/select.js"
 
@@ -222,12 +224,14 @@ export const modelCommands: readonly CommandDefinition[] = [
         path: ["models", "run"],
         summary: "Run a prompt against one saved model definition.",
         description: "Loads the saved definition, resolves its API key from the environment, sends a prompt, and prints the response with usage cost when available.",
-        usage: "rueter models run <name> [--scope <local|global>] [--prompt <text> | --file <path> | --stdin] [--json]",
+        usage: "rueter models run <name> [--scope <local|global>] [--prompt <text> | --file <path> | --stdin] [--raw] [--json]",
         options: [
             { flag: "--scope <local|global>", description: "Resolve the definition from one scope only." },
             { flag: "--prompt <text>", description: "Prompt text to send." },
             { flag: "--file <path>", description: "Read prompt text from a file." },
             { flag: "--stdin", description: "Read prompt text from stdin." },
+            { flag: "--raw", description: "Print only the model response text." },
+            { flag: "--no-history", description: "Do not record this run in local CLI history." },
             { flag: "--json", description: "Output the response as JSON." },
         ],
         examples: [
@@ -240,9 +244,23 @@ export const modelCommands: readonly CommandDefinition[] = [
             const record = await resolveSavedModel(name, context.cwd, scope)
             const prompt = await resolvePromptText({ ...context, args: context.args.slice(1) }, 0, "Enter the prompt for this saved model")
             const execution = await executeSavedModelPrompt(record, prompt)
+            await recordHistory(context, {
+                targetType: "model",
+                targetName: record.definition.name,
+                provider: record.definition.provider,
+                modelName: record.definition.modelName,
+                prompt,
+                durationMs: execution.durationMs,
+                result: execution,
+            })
 
             if (context.flags.json === true) {
                 console.log(renderJson(execution))
+                return 0
+            }
+
+            if (context.flags.raw === true) {
+                console.log(renderRawModelResult(execution))
                 return 0
             }
 
@@ -254,10 +272,12 @@ export const modelCommands: readonly CommandDefinition[] = [
         path: ["models", "test"],
         summary: "Smoke-test one saved model definition with a lightweight prompt.",
         description: "Resolves the saved model and sends a short test prompt so you can verify the API key, model selection, and connectivity without wiring a full run command.",
-        usage: "rueter models test <name> [--scope <local|global>] [--prompt <text>] [--json]",
+        usage: "rueter models test <name> [--scope <local|global>] [--prompt <text>] [--raw] [--json]",
         options: [
             { flag: "--scope <local|global>", description: "Resolve the definition from one scope only." },
             { flag: "--prompt <text>", description: "Custom test prompt. Defaults to a lightweight connectivity check." },
+            { flag: "--raw", description: "Print only the model response text." },
+            { flag: "--no-history", description: "Do not record this smoke test in local CLI history." },
             { flag: "--json", description: "Output the response as JSON." },
         ],
         examples: [
@@ -270,9 +290,23 @@ export const modelCommands: readonly CommandDefinition[] = [
             const record = await resolveSavedModel(name, context.cwd, scope)
             const prompt = readStringFlag(context.flags, "prompt") ?? "Reply with exactly the word OK."
             const execution = await executeSavedModelPrompt(record, prompt)
+            await recordHistory(context, {
+                targetType: "model",
+                targetName: record.definition.name,
+                provider: record.definition.provider,
+                modelName: record.definition.modelName,
+                prompt,
+                durationMs: execution.durationMs,
+                result: execution,
+            })
 
             if (context.flags.json === true) {
                 console.log(renderJson(execution))
+                return 0
+            }
+
+            if (context.flags.raw === true) {
+                console.log(renderRawModelResult(execution))
                 return 0
             }
 

@@ -103,6 +103,31 @@ export interface OrchestratorExecutionResult {
     result: RueterResults
 }
 
+export type HistoryTargetType = "model" | "orchestrator" | "preset" | "workflow" | "ghostwriter" | "ask"
+
+export interface HistoryEntry {
+    version: 1
+    id: string
+    command: string[]
+    target: {
+        type: HistoryTargetType
+        name: string
+        provider?: Provider
+        modelName?: string
+    }
+    prompt?: string
+    durationMs?: number
+    result?: unknown
+    cwd: string
+    createdAt: string
+}
+
+export interface HistoryRecord {
+    scope: CliScope
+    filePath: string
+    entry: HistoryEntry
+}
+
 export type ParsedInvocation =
     | { kind: "command"; command: CommandDefinition; context: CommandContext }
     | { kind: "help"; command?: CommandDefinition; error?: string }
