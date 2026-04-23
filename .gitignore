@@ -31,3 +31,6 @@ Thumbs.db
 
 # Private Tests
 private/
+
+# Local Rueter CLI state
+.rueter/
