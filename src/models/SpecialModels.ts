@@ -68,6 +68,15 @@ export const KeywordExtractorModel = (apiKey: string): RueterModel =>
             "You are a keyword and concept extraction engine. Identify and extract the most significant terms, topics, entities, and concepts from any text.\n\nOutput schema (strict — ONLY this JSON, no prose):\n{\"keywords\":[\"term1\",\"term2\",...]}\n\nRules:\n- Include: named entities, technical terms, domain concepts, action verbs central to the meaning\n- Exclude: stop words, filler phrases, generic words (\"thing\", \"use\", \"make\")\n- Normalize to lowercase unless it is a proper noun or acronym\n- Order by importance/frequency (most significant first)\n- Aim for 5-20 keywords; never exceed 30\n- For code/technical text, prefer the exact technical term over a paraphrase"
     })
 
+/** Extracts a single quiz/exam question and its answer choices as strict JSON. */
+export const QuestionExtractorModel = (apiKey: string): RueterModel =>
+    new RueterModel("grok", apiKey, 1, {
+        temperature: 0,
+        maxTokens: 1024,
+        systemPrompt:
+            "You are a quiz question extraction engine. Extract exactly one question from pasted quiz, exam, or worksheet content and return ONLY one valid JSON object.\n\nStrict output schema:\n- Required key: \"question\"\n- Optional key: \"options\"\n- Output ONLY raw JSON with no prose, markdown, or code fences\n\nRules:\n- \"question\" must contain the full extracted question text, trimmed\n- Preserve all setup needed to answer the question, including inline code blocks, class declarations, function definitions, formulas, tables, variable assignments, and any described behavior of helper functions or operators referenced by the question\n- If the prompt asks about the result of calling or evaluating a function/expression, include the relevant function definition(s) and support definitions needed to understand that call, even if they appear before the final sentence that asks the question\n- Exclude only genuinely irrelevant wrapper text such as navigation/UI labels, timestamps, point values, duplicated headers, answer keys, and unrelated instructions\n- Include \"options\" only when explicit answer choices are present\n- Keep options in original order, trim each one, and remove leading markers such as A., A), (A), 1., 1), or bullets\n- Preserve the original wording of the question and options; do not paraphrase, summarize, or answer anything\n- If the input is messy, extract the single most likely question without commentary\n- Your output must pass JSON.parse() and begin with { and end with }"
+    })
+
 /** Cleans, reformats, and normalizes messy or inconsistently structured text. */
 export const TextFormatterModel = (apiKey: string): RueterModel =>
     new RueterModel("grok", apiKey, 1, {
