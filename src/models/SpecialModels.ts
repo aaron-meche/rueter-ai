@@ -1,13 +1,18 @@
 //
-// Special Models
+// Special Presets
 //
 // Rueter AI
 // created by Aaron Meche
 //
-// Parameter policy: xAI reasoning models reject requests with both `temperature`
-// and `top_p` set simultaneously, and may also reject `frequency_penalty` /
-// `presence_penalty`. All models here use only `temperature`, `maxTokens`,
-// `systemPrompt`, and (where appropriate) `stopSequences`.
+// These exports are task-specific preset config objects for "RueterModel".
+// They are provider-agnostic and can be passed directly as the third or fourth
+// argument to the constructor:
+//
+//      new RueterModel("openai", apiKey, CompressorPreset)
+//      new RueterModel("anthropic", apiKey, "claude-sonnet-4-6", CodeReviewPreset)
+//
+// For package internals and CLI usage, a default Grok-backed instantiator is
+// also exported below.
 //
 // Temperature guide used throughout this file:
 //   0         — deterministic, exact output (code, JSON, SQL, regex)
@@ -17,13 +22,34 @@
 //   0.4–0.6   — expressive creativity (style replication, blog posts, brainstorming)
 //
 
+import type { ModelSelector, Provider, RueterModelConfig } from "../types.js"
 import { RueterModel } from "./RueterModel.js"
+
+export const DEFAULT_SPECIAL_PRESET_PROVIDER: Provider = "grok"
+export const DEFAULT_SPECIAL_PRESET_MODEL = "grok-4-fast-reasoning"
+
+function createPreset(config: RueterModelConfig): RueterModelConfig {
+    return Object.freeze({
+        ...config,
+        stopSequences: config.stopSequences ? [...config.stopSequences] : undefined,
+    }) as RueterModelConfig
+}
+
+// Helper used by package internals and the CLI when a preset should be
+// instantiated on the recommended default model.
+export function instantiateSpecialPreset(
+    apiKey: string,
+    preset: RueterModelConfig,
+    provider: Provider = DEFAULT_SPECIAL_PRESET_PROVIDER,
+    model: ModelSelector = DEFAULT_SPECIAL_PRESET_MODEL
+): RueterModel {
+    return new RueterModel(provider, apiKey, model, preset)
+}
 
 // ─── Utility & Text Processing ────────────────────────────────────────────────
 
 /** Reduces any prompt to the minimum tokens needed without losing meaning. */
-export const CompressorModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const CompressorPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 512,
         systemPrompt:
@@ -31,28 +57,25 @@ export const CompressorModel = (apiKey: string): RueterModel =>
     })
 
 /** Returns only the final answer to any question — no explanation, no preamble. */
-export const SimpleAnswerModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const SimpleAnswerPreset: RueterModelConfig = createPreset({
         temperature: 0,
-        maxTokens: 128,
+        maxTokens: 96,
         stopSequences: ["\n\n"],
         systemPrompt:
             "You are a precision answer engine. Output ONLY the final answer — nothing else.\n\nRules:\n- No explanations, preambles, hedges, or qualifiers whatsoever\n- No markdown or formatting unless the answer itself requires it\n- Math/calculations: the number and unit only\n- Yes/no questions: \"Yes\" or \"No\" only\n- Factual lookups: the fact in the fewest accurate words\n- Lists: comma-separated unless the question implies newlines\n- If genuinely ambiguous: pick the most common interpretation and answer it directly\n- If the answer requires more than 3 sentences, you are over-explaining — cut it"
     })
 
 /** Converts natural language descriptions into single, executable terminal commands. */
-export const TerminalCommandModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const TerminalCommandPreset: RueterModelConfig = createPreset({
         temperature: 0,
-        maxTokens: 192,
+        maxTokens: 160,
         stopSequences: ["\n"],
         systemPrompt:
             "You are a shell command synthesizer. Convert any natural language request into the exact, complete terminal command to accomplish it.\n\nRules:\n- Output ONE line: the complete, ready-to-run command — nothing else\n- No markdown, no backticks, no explanations, no trailing newlines\n- Default to POSIX sh syntax unless a specific shell (bash, zsh, fish) is specified\n- For destructive operations (rm, truncate, drop) use safe flags (rm -i, --dry-run) unless explicitly told otherwise\n- Chain with && when steps must be sequential; use | for pipelines\n- Prefer widely-available tools (grep, awk, sed, curl) over obscure ones\n- If the task requires multiple unrelated commands, use a semicolon separator\n- When a file path might have spaces, quote it with double quotes"
     })
 
 /** Transforms any vague or weak prompt into a high-performance prompt for frontier models. */
-export const PromptEnhancerModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const PromptEnhancerPreset: RueterModelConfig = createPreset({
         temperature: 0.25,
         maxTokens: 2048,
         systemPrompt:
@@ -60,8 +83,7 @@ export const PromptEnhancerModel = (apiKey: string): RueterModel =>
     })
 
 /** Extracts key terms, topics, and concepts from any text as a clean JSON array. */
-export const KeywordExtractorModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const KeywordExtractorPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 512,
         systemPrompt:
@@ -69,8 +91,7 @@ export const KeywordExtractorModel = (apiKey: string): RueterModel =>
     })
 
 /** Extracts a single quiz/exam question and its answer choices as strict JSON. */
-export const QuestionExtractorModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const QuestionExtractorPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 1024,
         systemPrompt:
@@ -78,8 +99,7 @@ export const QuestionExtractorModel = (apiKey: string): RueterModel =>
     })
 
 /** Cleans, reformats, and normalizes messy or inconsistently structured text. */
-export const TextFormatterModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const TextFormatterPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 4096,
         systemPrompt:
@@ -89,8 +109,7 @@ export const TextFormatterModel = (apiKey: string): RueterModel =>
 // ─── Code Intelligence ────────────────────────────────────────────────────────
 
 /** Generates complete, production-ready implementations for any programming task. */
-export const CodeGeneratorModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const CodeGeneratorPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 16384,
         systemPrompt:
@@ -98,8 +117,7 @@ export const CodeGeneratorModel = (apiKey: string): RueterModel =>
     })
 
 /** Improves any codebase for clarity, performance, and maintainability without changing behavior. */
-export const RefactorModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const RefactorPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 12288,
         systemPrompt:
@@ -107,8 +125,7 @@ export const RefactorModel = (apiKey: string): RueterModel =>
     })
 
 /** Diagnoses the root cause of any bug and provides the minimal correct fix. */
-export const DebugModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const DebugPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 4096,
         systemPrompt:
@@ -116,8 +133,7 @@ export const DebugModel = (apiKey: string): RueterModel =>
     })
 
 /** Generates exhaustive, framework-appropriate test suites for any code. */
-export const TestGeneratorModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const TestGeneratorPreset: RueterModelConfig = createPreset({
         temperature: 0.1,
         maxTokens: 10240,
         systemPrompt:
@@ -125,8 +141,7 @@ export const TestGeneratorModel = (apiKey: string): RueterModel =>
     })
 
 /** Audits code for security vulnerabilities, misconfigurations, and dangerous patterns. */
-export const SecurityAuditorModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const SecurityAuditorPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 5120,
         systemPrompt:
@@ -134,8 +149,7 @@ export const SecurityAuditorModel = (apiKey: string): RueterModel =>
     })
 
 /** Conducts a thorough pull-request-style code review with actionable feedback. */
-export const CodeReviewModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const CodeReviewPreset: RueterModelConfig = createPreset({
         temperature: 0.05,
         maxTokens: 5120,
         systemPrompt:
@@ -143,8 +157,7 @@ export const CodeReviewModel = (apiKey: string): RueterModel =>
     })
 
 /** Produces complete, accurate technical documentation for any code or API. */
-export const DocumentationModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const DocumentationPreset: RueterModelConfig = createPreset({
         temperature: 0.15,
         maxTokens: 8192,
         systemPrompt:
@@ -152,18 +165,16 @@ export const DocumentationModel = (apiKey: string): RueterModel =>
     })
 
 /** Generates a precise, conventional git commit message from a diff or description. */
-export const CommitMessageModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const CommitMessagePreset: RueterModelConfig = createPreset({
         temperature: 0.1,
-        maxTokens: 192,
+        maxTokens: 96,
         stopSequences: ["\n"],
         systemPrompt:
             "You are a git commit message synthesizer. Generate a precise, conventional commit message from a diff or change description.\n\nFormat: <type>(<scope>): <subject>\n\nValid types: feat | fix | refactor | perf | test | docs | chore | style | revert\nScope: the affected module, component, or file (omit if the change is global)\nSubject: imperative mood, ≤72 characters total line length, no trailing period\n\nRules:\n- Output ONLY the commit subject line — nothing else, no body, no newlines\n- Imperative mood: \"add\", \"fix\", \"remove\", \"update\" — never \"added\", \"fixes\"\n- Be specific enough to distinguish this commit from similar ones\n- Include a ticket/issue number only if it appears in the input\n- When in doubt about scope, omit it rather than using something vague like \"misc\""
     })
 
 /** Explains what any code does in plain English with architecture and flow notes. */
-export const CodeExplainerModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const CodeExplainerPreset: RueterModelConfig = createPreset({
         temperature: 0.2,
         maxTokens: 3072,
         systemPrompt:
@@ -171,8 +182,7 @@ export const CodeExplainerModel = (apiKey: string): RueterModel =>
     })
 
 /** Adds precise TypeScript types to untyped or loosely-typed JavaScript/TypeScript code. */
-export const TypeScriptTyperModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const TypeScriptTyperPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 12288,
         systemPrompt:
@@ -180,8 +190,7 @@ export const TypeScriptTyperModel = (apiKey: string): RueterModel =>
     })
 
 /** Identifies performance bottlenecks, complexity issues, and optimization opportunities. */
-export const PerformanceAnalyzerModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const PerformanceAnalyzerPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 4096,
         systemPrompt:
@@ -189,8 +198,7 @@ export const PerformanceAnalyzerModel = (apiKey: string): RueterModel =>
     })
 
 /** Generates complete, runnable code from a detailed function specification. */
-export const FunctionGeneratorModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const FunctionGeneratorPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 3072,
         systemPrompt:
@@ -203,8 +211,7 @@ export const FunctionGeneratorModel = (apiKey: string): RueterModel =>
  * Designs a complete, topologically ordered project architecture as structured JSON.
  * This is the first step of the CodeProjectGenerator pipeline.
  */
-export const ProjectArchitectModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const ProjectArchitectPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 12288,
         systemPrompt:
@@ -215,8 +222,7 @@ export const ProjectArchitectModel = (apiKey: string): RueterModel =>
  * Breaks a single source file into a precise per-function implementation plan.
  * Used in Step 3 of CodeProjectGenerator for all non-plain files.
  */
-export const FilePlannerModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const FilePlannerPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 6144,
         systemPrompt:
@@ -227,8 +233,7 @@ export const FilePlannerModel = (apiKey: string): RueterModel =>
  * Assembles individually-generated functions into a single, complete source file.
  * Used as the final step of per-file generation in CodeProjectGenerator.
  */
-export const FileAssemblerModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const FileAssemblerPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 16384,
         systemPrompt:
@@ -236,8 +241,7 @@ export const FileAssemblerModel = (apiKey: string): RueterModel =>
     })
 
 /** Extracts the public API surface of any source file for use as import context. */
-export const ApiExtractorModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const ApiExtractorPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 2048,
         systemPrompt:
@@ -247,8 +251,7 @@ export const ApiExtractorModel = (apiKey: string): RueterModel =>
 // ─── Analysis & Planning ──────────────────────────────────────────────────────
 
 /** Breaks any large goal into a minimal ordered set of concrete, actionable subtasks. */
-export const DecomposerModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const DecomposerPreset: RueterModelConfig = createPreset({
         temperature: 0.1,
         maxTokens: 4096,
         systemPrompt:
@@ -256,8 +259,7 @@ export const DecomposerModel = (apiKey: string): RueterModel =>
     })
 
 /** Produces detailed, realistic, phased project plans with effort estimates. */
-export const PlannerModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const PlannerPreset: RueterModelConfig = createPreset({
         temperature: 0.2,
         maxTokens: 6144,
         systemPrompt:
@@ -265,8 +267,7 @@ export const PlannerModel = (apiKey: string): RueterModel =>
     })
 
 /** Rigorously evaluates any AI output and assigns a quality score with a clear rationale. */
-export const SelfCritiqueModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const SelfCritiquePreset: RueterModelConfig = createPreset({
         temperature: 0.05,
         maxTokens: 2048,
         systemPrompt:
@@ -274,8 +275,7 @@ export const SelfCritiqueModel = (apiKey: string): RueterModel =>
     })
 
 /** Condenses any text to its essential information while preserving all key facts. */
-export const SummarizerModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const SummarizerPreset: RueterModelConfig = createPreset({
         temperature: 0.2,
         maxTokens: 2048,
         systemPrompt:
@@ -283,8 +283,7 @@ export const SummarizerModel = (apiKey: string): RueterModel =>
     })
 
 /** Translates text between languages while preserving tone, register, and idiom. */
-export const TranslatorModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const TranslatorPreset: RueterModelConfig = createPreset({
         temperature: 0.1,
         maxTokens: 6144,
         systemPrompt:
@@ -292,8 +291,7 @@ export const TranslatorModel = (apiKey: string): RueterModel =>
     })
 
 /** Explains any concept clearly with a mental model, example, and common misconceptions. */
-export const ConceptExplainerModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const ConceptExplainerPreset: RueterModelConfig = createPreset({
         temperature: 0.3,
         maxTokens: 2048,
         systemPrompt:
@@ -301,8 +299,7 @@ export const ConceptExplainerModel = (apiKey: string): RueterModel =>
     })
 
 /** Performs structured root-cause analysis using the 5-Whys method. */
-export const RootCauseAnalyzerModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const RootCauseAnalyzerPreset: RueterModelConfig = createPreset({
         temperature: 0.1,
         maxTokens: 3072,
         systemPrompt:
@@ -310,8 +307,7 @@ export const RootCauseAnalyzerModel = (apiKey: string): RueterModel =>
     })
 
 /** Constructs structured arguments with evidence, counterarguments, and rebuttals. */
-export const ArgumentBuilderModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const ArgumentBuilderPreset: RueterModelConfig = createPreset({
         temperature: 0.25,
         maxTokens: 4096,
         systemPrompt:
@@ -319,8 +315,7 @@ export const ArgumentBuilderModel = (apiKey: string): RueterModel =>
     })
 
 /** Provides structured pro/con analysis with a clear recommendation. */
-export const DecisionAnalyzerModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const DecisionAnalyzerPreset: RueterModelConfig = createPreset({
         temperature: 0.2,
         maxTokens: 3072,
         systemPrompt:
@@ -330,8 +325,7 @@ export const DecisionAnalyzerModel = (apiKey: string): RueterModel =>
 // ─── Data & Structure ─────────────────────────────────────────────────────────
 
 /** Parses any unstructured or semi-structured text into clean, valid JSON. */
-export const DataExtractorModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const DataExtractorPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 6144,
         systemPrompt:
@@ -339,8 +333,7 @@ export const DataExtractorModel = (apiKey: string): RueterModel =>
     })
 
 /** Responds to any input in strict, valid JSON format. */
-export const JsonResponseModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const JsonResponsePreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 6144,
         systemPrompt:
@@ -348,8 +341,7 @@ export const JsonResponseModel = (apiKey: string): RueterModel =>
     })
 
 /** Generates precise schema definitions in any format from descriptions or sample data. */
-export const SchemaGeneratorModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const SchemaGeneratorPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 5120,
         systemPrompt:
@@ -357,8 +349,7 @@ export const SchemaGeneratorModel = (apiKey: string): RueterModel =>
     })
 
 /** Analyzes sentiment and emotion in any text with a structured JSON output. */
-export const SentimentAnalyzerModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const SentimentAnalyzerPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 384,
         systemPrompt:
@@ -366,8 +357,7 @@ export const SentimentAnalyzerModel = (apiKey: string): RueterModel =>
     })
 
 /** Classifies any text into user-specified categories with confidence and reasoning. */
-export const ClassifierModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const ClassifierPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 192,
         systemPrompt:
@@ -375,8 +365,7 @@ export const ClassifierModel = (apiKey: string): RueterModel =>
     })
 
 /** Extracts named entities (people, organizations, locations, dates) from any text. */
-export const EntityExtractorModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const EntityExtractorPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 2048,
         systemPrompt:
@@ -384,8 +373,7 @@ export const EntityExtractorModel = (apiKey: string): RueterModel =>
     })
 
 /** Converts data between structured formats (JSON, CSV, XML, YAML, TOML). */
-export const DataTransformerModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const DataTransformerPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 6144,
         systemPrompt:
@@ -393,8 +381,7 @@ export const DataTransformerModel = (apiKey: string): RueterModel =>
     })
 
 /** Validates data against a schema and reports all violations clearly. */
-export const DataValidatorModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const DataValidatorPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 3072,
         systemPrompt:
@@ -404,18 +391,16 @@ export const DataValidatorModel = (apiKey: string): RueterModel =>
 // ─── Code Generation: SQL & APIs ─────────────────────────────────────────────
 
 /** Generates precise regular expressions for any described pattern. */
-export const RegexGeneratorModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const RegexGeneratorPreset: RueterModelConfig = createPreset({
         temperature: 0,
-        maxTokens: 256,
+        maxTokens: 128,
         stopSequences: ["\n"],
         systemPrompt:
             "You are a regex synthesis engine. Generate the minimal, correct regular expression for any described pattern.\n\nRules:\n- Output ONE line: the regex pattern only — no delimiters, no flags, no surrounding characters\n- Default to PCRE-compatible syntax unless another flavor is specified\n- Use the simplest correct pattern — avoid unnecessary backtracking or complexity\n- Anchor with ^ and $ when the description implies full-string matching\n- Use non-capturing groups (?:...) when grouping without capturing\n- Never output explanations, backticks, forward slashes, or any surrounding characters"
     })
 
 /** Converts natural language data requests into optimized SQL queries. */
-export const SQLGeneratorModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const SQLGeneratorPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 3072,
         systemPrompt:
@@ -423,8 +408,7 @@ export const SQLGeneratorModel = (apiKey: string): RueterModel =>
     })
 
 /** Designs clean, consistent REST APIs with full endpoint and schema documentation. */
-export const ApiDesignerModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const ApiDesignerPreset: RueterModelConfig = createPreset({
         temperature: 0.15,
         maxTokens: 6144,
         systemPrompt:
@@ -432,8 +416,7 @@ export const ApiDesignerModel = (apiKey: string): RueterModel =>
     })
 
 /** Generates a GraphQL schema (SDL) for any described data model or API. */
-export const GraphQLSchemaModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const GraphQLSchemaPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 5120,
         systemPrompt:
@@ -441,8 +424,7 @@ export const GraphQLSchemaModel = (apiKey: string): RueterModel =>
     })
 
 /** Generates a complete OpenAPI 3.0 spec from a natural language API description. */
-export const OpenApiSpecModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const OpenApiSpecPreset: RueterModelConfig = createPreset({
         temperature: 0,
         maxTokens: 10240,
         systemPrompt:
@@ -452,8 +434,7 @@ export const OpenApiSpecModel = (apiKey: string): RueterModel =>
 // ─── Writing & Content ────────────────────────────────────────────────────────
 
 /** Analyzes a writer's style and produces a detailed fingerprint for replication. */
-export const WritingStyleAnalyzerModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const WritingStyleAnalyzerPreset: RueterModelConfig = createPreset({
         temperature: 0.1,
         maxTokens: 6144,
         systemPrompt:
@@ -461,8 +442,7 @@ export const WritingStyleAnalyzerModel = (apiKey: string): RueterModel =>
     })
 
 /** Writes any assignment indistinguishably in a specific person's voice. */
-export const StyleReplicatorModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const StyleReplicatorPreset: RueterModelConfig = createPreset({
         temperature: 0.45,
         maxTokens: 10240,
         systemPrompt:
@@ -470,8 +450,7 @@ export const StyleReplicatorModel = (apiKey: string): RueterModel =>
     })
 
 /** Writes polished academic and research prose for papers, reports, and essays. */
-export const AcademicWriterModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const AcademicWriterPreset: RueterModelConfig = createPreset({
         temperature: 0.3,
         maxTokens: 10240,
         systemPrompt:
@@ -479,8 +458,7 @@ export const AcademicWriterModel = (apiKey: string): RueterModel =>
     })
 
 /** Designs a structured research paper outline as JSON. */
-export const ResearchOutlinerModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const ResearchOutlinerPreset: RueterModelConfig = createPreset({
         temperature: 0.2,
         maxTokens: 3072,
         systemPrompt:
@@ -488,8 +466,7 @@ export const ResearchOutlinerModel = (apiKey: string): RueterModel =>
     })
 
 /** Drafts professional, clear, and appropriately toned emails for any situation. */
-export const EmailDrafterModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const EmailDrafterPreset: RueterModelConfig = createPreset({
         temperature: 0.3,
         maxTokens: 2048,
         systemPrompt:
@@ -497,8 +474,7 @@ export const EmailDrafterModel = (apiKey: string): RueterModel =>
     })
 
 /** Writes engaging, developer-focused technical blog posts. */
-export const TechnicalBlogModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const TechnicalBlogPreset: RueterModelConfig = createPreset({
         temperature: 0.45,
         maxTokens: 10240,
         systemPrompt:
@@ -506,8 +482,7 @@ export const TechnicalBlogModel = (apiKey: string): RueterModel =>
     })
 
 /** Generates clear, user-readable changelog entries from diffs or change descriptions. */
-export const ChangelogGeneratorModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const ChangelogGeneratorPreset: RueterModelConfig = createPreset({
         temperature: 0.15,
         maxTokens: 2048,
         systemPrompt:
@@ -515,8 +490,7 @@ export const ChangelogGeneratorModel = (apiKey: string): RueterModel =>
     })
 
 /** Generates professional README.md content for any codebase or project. */
-export const ReadmeGeneratorModel = (apiKey: string): RueterModel =>
-    new RueterModel("grok", apiKey, 1, {
+export const ReadmeGeneratorPreset: RueterModelConfig = createPreset({
         temperature: 0.2,
         maxTokens: 6144,
         systemPrompt:

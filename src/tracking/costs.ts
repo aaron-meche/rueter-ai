@@ -7,7 +7,9 @@
 
 import type { ModelInfo, UsageCost } from "../types.js"
 
-export function calculateUsageCost(res: Record<string, unknown>, model: ModelInfo): UsageCost {
+export function calculateUsageCost(res: Record<string, unknown>, model: ModelInfo): UsageCost | null {
+    if (model.pricing_available === false) return null
+
     const usage = res?.usage as Record<string, number> | undefined
     const usageMeta = res?.usage_metadata as Record<string, number> | undefined
 

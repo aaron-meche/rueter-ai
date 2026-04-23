@@ -4,7 +4,12 @@ import { CliError } from "../core/errors.js"
 import { readStringFlag } from "../core/flags.js"
 import { recordHistory } from "../core/history.js"
 import { resolvePromptText } from "../core/input.js"
-import { listPresets, resolvePreset } from "../core/presets.js"
+import {
+    DEFAULT_SPECIAL_PRESET_MODEL,
+    DEFAULT_SPECIAL_PRESET_PROVIDER,
+    listPresets,
+    resolvePreset,
+} from "../core/presets.js"
 import { renderHeader, renderJson, renderModelExecutionResult, renderRawModelResult } from "../ui/render.js"
 import { selectOption } from "../ui/select.js"
 import { performance } from "node:perf_hooks"
@@ -13,7 +18,7 @@ export const presetCommands: readonly CommandDefinition[] = [
     {
         path: ["presets", "list"],
         summary: "List the built-in specialized model presets exported by rueter-ai.",
-        description: "Shows the preset registry exposed through SpecialModels.ts. These are currently Grok-backed preset factories in the package source.",
+        description: "Shows the preset registry exposed through SpecialModels.ts. These are provider-agnostic config presets that the CLI currently instantiates with its default Grok preset model.",
         usage: "rueter presets list [--json]",
         options: [
             { flag: "--json", description: "Output the preset registry as JSON." },
@@ -29,7 +34,7 @@ export const presetCommands: readonly CommandDefinition[] = [
             }
 
             console.log([
-                renderHeader("Built-in Presets", `${presets.length} preset factories`),
+                renderHeader("Built-in Presets", `${presets.length} config presets`),
                 presets.map(preset => `${preset.key}\n  ${preset.exportName}`).join("\n\n"),
             ].join("\n"))
             return 0
@@ -38,7 +43,7 @@ export const presetCommands: readonly CommandDefinition[] = [
     {
         path: ["presets", "run"],
         summary: "Run one built-in specialized model preset.",
-        description: "Instantiates one preset model factory, resolves a Grok/xAI API key from the environment, sends a prompt, and prints the result.",
+        description: "Instantiates one preset config with the CLI's default Grok preset model, resolves a Grok/xAI API key from the environment, sends a prompt, and prints the result.",
         usage: "rueter presets run <name> [--api-key-env <ENV>] [--prompt <text> | --file <path> | --stdin] [--raw] [--json]",
         options: [
             { flag: "--api-key-env <ENV>", description: "Explicit env var containing the Grok/xAI API key." },
@@ -57,26 +62,29 @@ export const presetCommands: readonly CommandDefinition[] = [
             const presetName = await resolvePresetName(context)
             const preset = resolvePreset(presetName)
             const prompt = await resolvePromptText({ ...context, args: context.args.slice(context.args[0] ? 1 : 0) }, 0, "Enter the prompt for this preset")
-            const { envName, apiKey } = resolveApiKeyValue("grok", readStringFlag(context.flags, "apiKeyEnv"))
+            const { envName, apiKey } = resolveApiKeyValue(DEFAULT_SPECIAL_PRESET_PROVIDER, readStringFlag(context.flags, "apiKeyEnv"))
             const model = preset.create(apiKey)
 
             const startedAt = performance.now()
-            const result = await model.prompt(prompt, true)
+            const response = await model.prompt(prompt)
             const durationMs = performance.now() - startedAt
             const execution = {
                 name: preset.key,
-                provider: "grok" as const,
-                modelName: preset.exportName,
+                provider: DEFAULT_SPECIAL_PRESET_PROVIDER,
+                modelName: DEFAULT_SPECIAL_PRESET_MODEL,
                 prompt,
                 durationMs,
-                result,
+                result: {
+                    res: response,
+                    cost: null,
+                },
                 apiKeyEnv: envName,
             }
             await recordHistory(context, {
                 targetType: "preset",
                 targetName: preset.key,
-                provider: "grok",
-                modelName: preset.exportName,
+                provider: DEFAULT_SPECIAL_PRESET_PROVIDER,
+                modelName: DEFAULT_SPECIAL_PRESET_MODEL,
                 prompt,
                 durationMs,
                 result: execution,

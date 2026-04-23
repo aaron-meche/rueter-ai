@@ -59,7 +59,7 @@ export function getModelSelectOptions(provider: Provider): SelectOption<string>[
     return getIndexedModels(provider).map(model => ({
         value: String(model.index),
         label: `[${model.index}] ${model.name}`,
-        hint: `${model.description} | context ${formatInteger(model.context)} | input $${model.input_cost.toFixed(2)}/M | output $${model.output_cost.toFixed(2)}/M`,
+        hint: `${model.description} | context ${formatInteger(model.context)} | ${formatPricingHint(model)}`,
     }))
 }
 
@@ -74,4 +74,9 @@ export function formatProviderName(provider: Provider): string {
 
 function formatInteger(value: number): string {
     return new Intl.NumberFormat("en-US").format(value)
+}
+
+function formatPricingHint(model: ModelInfo): string {
+    if (model.pricing_available === false) return "pricing n/a"
+    return `input $${model.input_cost.toFixed(2)}/M | output $${model.output_cost.toFixed(2)}/M`
 }
