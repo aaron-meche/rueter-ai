@@ -7,8 +7,8 @@
 // Small public helpers for inspecting the built-in provider/model catalog.
 //
 
-import { models } from "../const/Models.js"
-import type { ModelInfo, Provider } from "../const/Types.js"
+import { models } from "../models/Catalog.js"
+import type { ModelInfo, Provider } from "../types.js"
 
 export const providerModelCatalog = models
 

@@ -5,7 +5,7 @@
 // created by Aaron Meche
 //
 
-import type { Models } from "./Types.js"
+import type { Models } from "../types.js"
 
 export const models: Models = {
     "anthropic": [

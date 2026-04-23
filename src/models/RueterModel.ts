@@ -7,8 +7,8 @@
 // Individual AI Model for single instances
 //
 
-import type { Provider, ModelInfo, ModelResult, HttpRequestFormat, RueterModelConfig } from "../const/Types.js"
-import { models } from "../const/Models.js"
+import type { Provider, ModelInfo, ModelResult, HttpRequestFormat, RueterModelConfig } from "../types.js"
+import { models } from "./Catalog.js"
 import { builders } from "../helpers/Builders.js"
 import { calculateUsageCost } from "../helpers/CostCalculator.js"
 
