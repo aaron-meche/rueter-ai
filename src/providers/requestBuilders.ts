@@ -1,13 +1,13 @@
 //
-// Builders
+// Request Builders
 //
 // Rueter AI
 // created by Aaron Meche
 //
 
-import type { Builders, BuilderConfig, HttpRequestFormat } from "../const/Types.js"
+import type { Builders, BuilderConfig, HttpRequestFormat } from "../types.js"
 
-export const builders: Builders = {
+export const requestBuilders: Builders = {
     "anthropic": (config: BuilderConfig, prompt: string): HttpRequestFormat => ({
         url: "https://api.anthropic.com/v1/messages",
         method: "POST",
@@ -90,3 +90,5 @@ export const builders: Builders = {
         }
     })
 }
+
+export const builders = requestBuilders

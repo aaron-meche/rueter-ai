@@ -7,11 +7,16 @@
     "router",
     "rue",
     "api",
-    "rueter"
+    "rueter",
+    "cli",
+    "terminal"
   ],
   "license": "MIT",
   "author": "Aaron Meche",
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/aaron-meche/rueter-ai"
@@ -19,6 +24,9 @@
   "homepage": "https://github.com/aaron-meche/rueter-ai#readme",
   "bugs": {
     "url": "https://github.com/aaron-meche/rueter-ai/issues"
+  },
+  "bin": {
+    "rueter": "./dist/cli/index.js"
   },
   "files": [
     "dist/"
@@ -32,8 +40,12 @@
     }
   },
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch"
+    "build": "tsc && tsc -p tsconfig.cli.json",
+    "build:cli": "tsc -p tsconfig.cli.json",
+    "dev": "tsc --watch",
+    "dev:cli": "tsc -p tsconfig.cli.json --watch",
+    "cli": "node dist/cli/index.js",
+    "prepare": "npm run build"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

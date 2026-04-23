@@ -7,7 +7,7 @@
 // Orchastrator Class for multiple RueterModels
 //
 
-import type { Provider, RueterModelConfig, RueterResults } from "../const/Types.js"
+import type { Provider, RueterModelConfig, RueterResults } from "../types.js"
 import { RueterModel } from "./RueterModel.js"
 
 export class Rueter {
