@@ -8,9 +8,9 @@
 //
 
 import type { Provider, ModelInfo, ModelResult, HttpRequestFormat, RueterModelConfig } from "../types.js"
-import { models } from "./Catalog.js"
-import { builders } from "../helpers/Builders.js"
-import { calculateUsageCost } from "../helpers/CostCalculator.js"
+import { providerModels } from "../catalog/providerModels.js"
+import { requestBuilders } from "../providers/requestBuilders.js"
+import { calculateUsageCost } from "../tracking/costs.js"
 
 export class RueterModel {
     // Model Type Config
@@ -31,7 +31,7 @@ export class RueterModel {
     constructor(provider: Provider, apiKey: string, model: number = 0, config?: RueterModelConfig) {
         this.#provider = provider
         this.#apiKey = apiKey
-        this.#model = models[provider][model]
+        this.#model = providerModels[provider][model]
         if (config?.systemPrompt) this.#systemPrompt = config.systemPrompt
         if (config?.temperature !== undefined) this.#temperature = config.temperature
         if (config?.maxTokens) this.#maxTokens = config.maxTokens
@@ -80,7 +80,7 @@ export class RueterModel {
             stopSequences: this.#stopSequences,
             n: this.#n,
         }
-        const res = await this.#httpRequest(builders[this.#provider](config, prompt))
+        const res = await this.#httpRequest(requestBuilders[this.#provider](config, prompt))
         const responseText =
             (res.choices as any)?.[0]?.message?.content ??
             (res.content as any)?.[0]?.text ??

@@ -1,4 +1,4 @@
-import type { Provider } from "../../src/const/Types.js"
+import type { Provider } from "../../src/types.js"
 
 import type { CommandDefinition } from "../types.js"
 import { formatProviderName, getIndexedModels, getModelSelectOptions, getProviderSelectOptions, isProvider } from "../core/catalog.js"

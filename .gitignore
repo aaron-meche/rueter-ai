@@ -34,3 +34,7 @@ private/
 
 # Local Rueter CLI state
 .rueter/
+
+# Roadmaps
+ROADMAP_CLI.md
+ROADMAP.md

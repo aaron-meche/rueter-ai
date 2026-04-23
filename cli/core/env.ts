@@ -1,4 +1,4 @@
-import type { Provider } from "../../src/const/Types.js"
+import type { Provider } from "../../src/types.js"
 import { CliError } from "./errors.js"
 
 export const providerApiKeyEnvVars: Record<Provider, string[]> = {

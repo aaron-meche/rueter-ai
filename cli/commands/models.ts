@@ -1,4 +1,4 @@
-import type { Provider, RueterModelConfig } from "../../src/const/Types.js"
+import type { Provider, RueterModelConfig } from "../../src/types.js"
 
 import type { CliScope, CommandDefinition } from "../types.js"
 import {

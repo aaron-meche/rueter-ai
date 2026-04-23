@@ -1,5 +1,5 @@
 //
-// Models
+// Provider Models
 //
 // Rueter AI
 // created by Aaron Meche
@@ -7,7 +7,7 @@
 
 import type { Models } from "../types.js"
 
-export const models: Models = {
+export const providerModels: Models = {
     "anthropic": [
         {
             name: "claude-haiku-4-5-20251001",
@@ -129,3 +129,5 @@ export const models: Models = {
         }
     ]
 }
+
+export const models = providerModels

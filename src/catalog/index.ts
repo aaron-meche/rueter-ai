@@ -7,27 +7,29 @@
 // Small public helpers for inspecting the built-in provider/model catalog.
 //
 
-import { models } from "../models/Catalog.js"
+import { providerModels } from "./providerModels.js"
 import type { ModelInfo, Provider } from "../types.js"
 
-export const providerModelCatalog = models
+export { providerModels }
+
+export const providerModelCatalog = providerModels
 
 export function listProviders(): Provider[] {
-    return Object.keys(models) as Provider[]
+    return Object.keys(providerModels) as Provider[]
 }
 
 export function getProviderModels(provider: Provider): readonly ModelInfo[] {
-    return models[provider]
+    return providerModels[provider]
 }
 
 export function getModelByIndex(provider: Provider, modelIndex: number): ModelInfo | undefined {
-    return models[provider][modelIndex]
+    return providerModels[provider][modelIndex]
 }
 
 export function getModelByName(provider: Provider, modelName: string): ModelInfo | undefined {
-    return models[provider].find(model => model.name === modelName)
+    return providerModels[provider].find(model => model.name === modelName)
 }
 
 export function getModelIndexByName(provider: Provider, modelName: string): number {
-    return models[provider].findIndex(model => model.name === modelName)
+    return providerModels[provider].findIndex(model => model.name === modelName)
 }

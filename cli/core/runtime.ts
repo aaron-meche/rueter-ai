@@ -2,9 +2,9 @@ import { performance } from "node:perf_hooks"
 
 import { Rueter } from "../../src/models/Rueter.js"
 import { RueterModel } from "../../src/models/RueterModel.js"
-import type { Provider, RueterModelConfig } from "../../src/const/Types.js"
+import type { Provider, RueterModelConfig } from "../../src/types.js"
 
-import { getModelByIndex, getModelIndexByName } from "../../src/helpers/ModelCatalog.js"
+import { getModelByIndex, getModelIndexByName } from "../../src/catalog/index.js"
 import { CliError } from "./errors.js"
 import { instantiateSavedModel } from "./models.js"
 import { instantiateSavedOrchestrator } from "./orchestrators.js"

@@ -1,8 +1,8 @@
 import * as nodePath from "node:path"
 
 import { RueterModel } from "../../src/models/RueterModel.js"
-import type { Provider, RueterModelConfig } from "../../src/const/Types.js"
-import { getModelByIndex, getModelIndexByName } from "../../src/helpers/ModelCatalog.js"
+import type { Provider, RueterModelConfig } from "../../src/types.js"
+import { getModelByIndex, getModelIndexByName } from "../../src/catalog/index.js"
 
 import { getIndexedModels, getProviders } from "./catalog.js"
 import { initializeCliConfig, type CliScope, getScopePathInfo } from "./config.js"

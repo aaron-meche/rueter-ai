@@ -1,4 +1,4 @@
-import type { ModelResult, Provider, RueterModelConfig, RueterResults } from "../src/const/Types.js"
+import type { ModelResult, Provider, RueterModelConfig, RueterResults } from "../src/types.js"
 
 export type CliFlagValue = boolean | string | undefined
 export type CliFlags = Record<string, CliFlagValue>
@@ -76,7 +76,7 @@ export interface SavedOrchestratorDefinition {
     kind: "orchestrator"
     name: string
     models: SavedModelRef[]
-    config: Pick<RueterModelConfig, "systemPrompt" | "temperature" | "maxTokens">
+    config: Partial<Pick<RueterModelConfig, "systemPrompt" | "temperature" | "maxTokens">>
     createdAt: string
     updatedAt: string
 }

@@ -1,8 +1,8 @@
 import {
     getProviderModels,
     listProviders,
-} from "../../src/helpers/ModelCatalog.js"
-import type { ModelInfo, Provider } from "../../src/const/Types.js"
+} from "../../src/catalog/index.js"
+import type { ModelInfo, Provider } from "../../src/types.js"
 
 import type { SelectOption } from "../types.js"
 

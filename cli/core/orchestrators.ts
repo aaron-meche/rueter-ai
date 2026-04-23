@@ -1,7 +1,7 @@
 import * as nodePath from "node:path"
 
 import { Rueter } from "../../src/models/Rueter.js"
-import type { RueterModelConfig } from "../../src/const/Types.js"
+import type { RueterModelConfig } from "../../src/types.js"
 
 import { initializeCliConfig, getScopePathInfo, type CliScope } from "./config.js"
 import { CliError } from "./errors.js"
@@ -12,7 +12,7 @@ import type { SavedModelRecord, SavedModelRef, SavedOrchestratorDefinition, Save
 export interface CreateSavedOrchestratorInput {
     name: string
     models: SavedModelRef[]
-    config: Pick<RueterModelConfig, "systemPrompt" | "temperature" | "maxTokens">
+    config: Partial<Pick<RueterModelConfig, "systemPrompt" | "temperature" | "maxTokens">>
 }
 
 export async function listSavedOrchestrators(cwd = process.cwd(), scope?: CliScope): Promise<SavedOrchestratorRecord[]> {
@@ -136,9 +136,9 @@ export async function listAddressableModels(cwd = process.cwd()): Promise<Array<
 }
 
 function validateOrchestratorConfig(
-    config: Pick<RueterModelConfig, "systemPrompt" | "temperature" | "maxTokens">
-): Pick<RueterModelConfig, "systemPrompt" | "temperature" | "maxTokens"> {
-    const sanitized: Pick<RueterModelConfig, "systemPrompt" | "temperature" | "maxTokens"> = {}
+    config: Partial<Pick<RueterModelConfig, "systemPrompt" | "temperature" | "maxTokens">>
+): Partial<Pick<RueterModelConfig, "systemPrompt" | "temperature" | "maxTokens">> {
+    const sanitized: Partial<Pick<RueterModelConfig, "systemPrompt" | "temperature" | "maxTokens">> = {}
 
     if (config.systemPrompt !== undefined && config.systemPrompt.trim().length > 0) {
         sanitized.systemPrompt = config.systemPrompt.trim()
