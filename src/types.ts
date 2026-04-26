@@ -5,7 +5,7 @@
 // created by Aaron Meche
 //
 
-export type Provider = "anthropic" | "openai" | "gemini" | "grok"
+export type Provider = "anthropic" | "openai" | "gemini" | "grok" | "deepseek"
 export type ModelSelector = number | string
 export type ModelStatus = "active" | "preview" | "legacy" | "deprecated" | "retired"
 export type ModelReleaseStage = "stable" | "preview" | "experimental" | "deprecated" | "retired"
