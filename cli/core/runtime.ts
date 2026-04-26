@@ -82,7 +82,7 @@ async function executeSingleModelPrompt(input: {
     prompt: string
 }): Promise<ModelExecutionResult> {
     const startedAt = performance.now()
-    const result = await input.model.prompt(input.prompt, true)
+    const response = await input.model.prompt(input.prompt)
     const durationMs = performance.now() - startedAt
 
     return {
@@ -91,7 +91,10 @@ async function executeSingleModelPrompt(input: {
         modelName: input.modelName,
         prompt: input.prompt,
         durationMs,
-        result,
+        result: {
+            res: response,
+            cost: null,
+        },
     }
 }
 

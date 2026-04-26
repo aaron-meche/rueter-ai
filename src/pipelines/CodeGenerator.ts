@@ -11,14 +11,15 @@
 import * as nodePath from "node:path"
 
 import {
-    PromptEnhancerModel,
-    CodeGeneratorModel,
-    ProjectArchitectModel,
-    ApiExtractorModel,
-    FilePlannerModel,
-    FunctionGeneratorModel,
-    FileAssemblerModel,
-    SecurityAuditorModel,
+    instantiateSpecialPreset,
+    PromptEnhancerPreset,
+    CodeGeneratorPreset,
+    ProjectArchitectPreset,
+    ApiExtractorPreset,
+    FilePlannerPreset,
+    FunctionGeneratorPreset,
+    FileAssemblerPreset,
+    SecurityAuditorPreset,
 } from "../models/SpecialModels.js"
 
 import {
@@ -64,7 +65,7 @@ interface FileTask {
     file: ProjectFile
     /** Display-level function tracking for the hub. Populated after planning. */
     functions: FunctionStatus[]
-    /** Full specs from FilePlannerModel. Used during generation. */
+    /** Full specs from FilePlannerPreset. Used during generation. */
     specs: FunctionSpec[]
     status: "pending" | "planning" | "generating" | "assembling" | "complete" | "failed"
     error?: string
@@ -246,16 +247,16 @@ function buildProjectMd(
  * Generates a complete, production-ready code project from a high-level prompt.
  *
  * Pipeline:
- *   1. Enhance prompt → PromptEnhancerModel
- *   2. Design architecture → ProjectArchitectModel (structured JSON)
- *   3. Plan all files in parallel → FilePlannerModel (all files simultaneously)
+ *   1. Enhance prompt → PromptEnhancerPreset
+ *   2. Design architecture → ProjectArchitectPreset (structured JSON)
+ *   3. Plan all files in parallel → FilePlannerPreset (all files simultaneously)
  *   4. Write initial hub file with full per-function checklists
  *   5. Generate each file in dependency order:
- *        a. Generate all functions in parallel → FunctionGeneratorModel
+ *        a. Generate all functions in parallel → FunctionGeneratorPreset
  *        b. Log each function as it completes
- *        c. Assemble complete file → FileAssemblerModel
+ *        c. Assemble complete file → FileAssemblerPreset
  *        d. Write to disk, extract API context, update hub after each file
- *   6. Security audit all generated files → SecurityAuditorModel
+ *   6. Security audit all generated files → SecurityAuditorPreset
  */
 export async function CodeProjectGenerator(config: CodeProjectConfig): Promise<void> {
     const {
@@ -266,14 +267,14 @@ export async function CodeProjectGenerator(config: CodeProjectConfig): Promise<v
         onProgress,
     } = config
 
-    const enhancer    = PromptEnhancerModel(apiKey)
-    const architect   = ProjectArchitectModel(apiKey)
-    const filePlanner = FilePlannerModel(apiKey)
-    const funcGen     = FunctionGeneratorModel(apiKey)
-    const assembler   = FileAssemblerModel(apiKey)
-    const plainGen    = CodeGeneratorModel(apiKey)
-    const extractor   = ApiExtractorModel(apiKey)
-    const secAuditor  = SecurityAuditorModel(apiKey)
+    const enhancer    = instantiateSpecialPreset(apiKey, PromptEnhancerPreset)
+    const architect   = instantiateSpecialPreset(apiKey, ProjectArchitectPreset)
+    const filePlanner = instantiateSpecialPreset(apiKey, FilePlannerPreset)
+    const funcGen     = instantiateSpecialPreset(apiKey, FunctionGeneratorPreset)
+    const assembler   = instantiateSpecialPreset(apiKey, FileAssemblerPreset)
+    const plainGen    = instantiateSpecialPreset(apiKey, CodeGeneratorPreset)
+    const extractor   = instantiateSpecialPreset(apiKey, ApiExtractorPreset)
+    const secAuditor  = instantiateSpecialPreset(apiKey, SecurityAuditorPreset)
 
     // 1 ─ Enhance prompt
     log(onProgress, "Step 1/6 — Enhancing project prompt…")
@@ -284,7 +285,7 @@ export async function CodeProjectGenerator(config: CodeProjectConfig): Promise<v
     const arch = await askForJson<ProjectArchitecture>(architect, enhancedPrompt)
 
     if (!Array.isArray(arch.files) || arch.files.length === 0) {
-        throw new Error("ProjectArchitectModel returned an architecture with no files.")
+        throw new Error("ProjectArchitectPreset returned an architecture with no files.")
     }
 
     const tasks: FileTask[] = arch.files.map((file, idx) => ({

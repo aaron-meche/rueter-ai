@@ -1,5 +1,11 @@
 import * as specialModels from "../../src/models/SpecialModels.js"
+import {
+    DEFAULT_SPECIAL_PRESET_MODEL,
+    DEFAULT_SPECIAL_PRESET_PROVIDER,
+    instantiateSpecialPreset,
+} from "../../src/models/SpecialModels.js"
 import type { RueterModel } from "../../src/models/RueterModel.js"
+import type { RueterModelConfig } from "../../src/types.js"
 
 import { CliError } from "./errors.js"
 
@@ -7,21 +13,25 @@ export interface PresetDefinition {
     key: string
     exportName: string
     label: string
+    config: RueterModelConfig
     create(apiKey: string): RueterModel
 }
 
 const presetRegistry = Object.entries(specialModels)
-    .filter((entry): entry is [string, (apiKey: string) => RueterModel] => {
+    .filter((entry): entry is [string, RueterModelConfig] => {
         const [name, value] = entry
-        return name.endsWith("Model") && typeof value === "function"
+        return name.endsWith("Preset") && typeof value === "object" && value !== null
     })
-    .map(([exportName, create]) => ({
-        key: toKebabCase(exportName.replace(/Model$/, "")),
+    .map(([exportName, config]) => ({
+        key: toKebabCase(exportName.replace(/Preset$/, "")),
         exportName,
-        label: humanizeExportName(exportName.replace(/Model$/, "")),
-        create,
+        label: humanizeExportName(exportName.replace(/Preset$/, "")),
+        config,
+        create: (apiKey: string) => instantiateSpecialPreset(apiKey, config),
     }))
     .sort((left, right) => left.key.localeCompare(right.key))
+
+export { DEFAULT_SPECIAL_PRESET_MODEL, DEFAULT_SPECIAL_PRESET_PROVIDER }
 
 export function listPresets(): readonly PresetDefinition[] {
     return presetRegistry

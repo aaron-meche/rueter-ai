@@ -6,8 +6,9 @@
 //
 
 import { 
-    WritingStyleAnalyzerModel, 
-    StyleReplicatorModel 
+    instantiateSpecialPreset,
+    WritingStyleAnalyzerPreset, 
+    StyleReplicatorPreset,
 } from "../models/SpecialModels.js"
 import "dotenv/config"
 
@@ -21,8 +22,8 @@ export async function GhostWriter(
     prompt: string,
     options: GhostWriterOptions = {}
 ): Promise<string> {
-    const styleAnalyzer = WritingStyleAnalyzerModel(apiKey)
-    const styleReplicator = StyleReplicatorModel(apiKey)
+    const styleAnalyzer = instantiateSpecialPreset(apiKey, WritingStyleAnalyzerPreset)
+    const styleReplicator = instantiateSpecialPreset(apiKey, StyleReplicatorPreset)
     const styleGuide = await styleAnalyzer.prompt(history.join("\n---\n"))
     const replicatedOutput = await styleReplicator.prompt(`Style Guide: {{ ${styleGuide} }} ... Assignment: {{ ${prompt} }}`)
 

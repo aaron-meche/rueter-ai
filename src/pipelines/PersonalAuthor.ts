@@ -10,10 +10,11 @@
 import * as nodePath from "node:path"
 
 import {
-    PromptEnhancerModel,
-    SelfCritiqueModel,
-    WritingStyleAnalyzerModel,
-    StyleReplicatorModel,
+    instantiateSpecialPreset,
+    PromptEnhancerPreset,
+    SelfCritiquePreset,
+    WritingStyleAnalyzerPreset,
+    StyleReplicatorPreset,
 } from "../models/SpecialModels.js"
 
 import {
@@ -98,11 +99,11 @@ function buildAuthorMdTemplate(): string {
  *
  * Pipeline:
  *   1. Read RueterAuthor.md (creates a template if absent)
- *   2. Enhance the assignment prompt → PromptEnhancerModel
- *   3. Analyze writing style → WritingStyleAnalyzerModel
- *   4. Write assignment in user's style → StyleReplicatorModel
- *   5. Critique style fidelity → SelfCritiqueModel
- *   6. Revise if score < 7 → StyleReplicatorModel (revision pass)
+ *   2. Enhance the assignment prompt → PromptEnhancerPreset
+ *   3. Analyze writing style → WritingStyleAnalyzerPreset
+ *   4. Write assignment in user's style → StyleReplicatorPreset
+ *   5. Critique style fidelity → SelfCritiquePreset
+ *   6. Revise if score < 7 → StyleReplicatorPreset (revision pass)
  */
 export async function PersonalAuthor(config: PersonalAuthorConfig): Promise<string> {
     const {
@@ -113,10 +114,10 @@ export async function PersonalAuthor(config: PersonalAuthorConfig): Promise<stri
         onProgress,
     } = config
 
-    const enhancer   = PromptEnhancerModel(apiKey)
-    const analyzer   = WritingStyleAnalyzerModel(apiKey)
-    const replicator = StyleReplicatorModel(apiKey)
-    const critiquer  = SelfCritiqueModel(apiKey)
+    const enhancer   = instantiateSpecialPreset(apiKey, PromptEnhancerPreset)
+    const analyzer   = instantiateSpecialPreset(apiKey, WritingStyleAnalyzerPreset)
+    const replicator = instantiateSpecialPreset(apiKey, StyleReplicatorPreset)
+    const critiquer  = instantiateSpecialPreset(apiKey, SelfCritiquePreset)
 
     // 1 ─ Load writing samples
     log(onProgress, "Step 1/6 — Loading writing samples…")

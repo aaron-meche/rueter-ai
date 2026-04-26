@@ -68,6 +68,26 @@ export const requestBuilders: Builders = {
             ...(config.n !== undefined && { n: config.n })
         }
     }),
+    "deepseek": (config: BuilderConfig, prompt: string): HttpRequestFormat => ({
+        url: "https://api.deepseek.com/v1/chat/completions",
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${config.apiKey}`
+        },
+        body: {
+            model: config.modelName,
+            messages: [
+                { role: "system", content: config.systemPrompt },
+                { role: "user",   content: prompt }
+            ],
+            max_tokens: config.maxTokens,
+            ...(config.temperature !== undefined && { temperature: config.temperature }),
+            ...(config.topP !== undefined && { top_p: config.topP }),
+            ...(config.frequencyPenalty !== undefined && { frequency_penalty: config.frequencyPenalty }),
+            ...(config.presencePenalty !== undefined && { presence_penalty: config.presencePenalty }),
+            ...(config.stopSequences && { stop: config.stopSequences }),
+        }
+    }),
     "gemini": (config: BuilderConfig, prompt: string): HttpRequestFormat => ({
         url: `https://generativelanguage.googleapis.com/v1beta/models/${config.modelName}:generateContent?key=${config.apiKey}`,
         method: "POST",

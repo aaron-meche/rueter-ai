@@ -10,10 +10,11 @@
 import * as nodePath from "node:path"
 
 import {
-    PromptEnhancerModel,
-    SelfCritiqueModel,
-    AcademicWriterModel,
-    ResearchOutlinerModel,
+    instantiateSpecialPreset,
+    PromptEnhancerPreset,
+    SelfCritiquePreset,
+    AcademicWriterPreset,
+    ResearchOutlinerPreset,
 } from "../models/SpecialModels.js"
 
 import {
@@ -93,11 +94,11 @@ function buildResearchMd(outline: ResearchOutline, sections: string[]): string {
  * Produces a complete, well-structured research document on any topic.
  *
  * Pipeline:
- *   1. Enhance topic → PromptEnhancerModel
- *   2. Generate JSON outline → ResearchOutlinerModel
- *   3. Write each section sequentially with rolling context → AcademicWriterModel
- *   4. Critique the full paper → SelfCritiqueModel
- *   5. Revision pass on all sections if quality score < 7 → AcademicWriterModel
+ *   1. Enhance topic → PromptEnhancerPreset
+ *   2. Generate JSON outline → ResearchOutlinerPreset
+ *   3. Write each section sequentially with rolling context → AcademicWriterPreset
+ *   4. Critique the full paper → SelfCritiquePreset
+ *   5. Revision pass on all sections if quality score < 7 → AcademicWriterPreset
  */
 export async function ResearchAssistantWorkflow(config: ResearchAssistantConfig): Promise<string> {
     const {
@@ -108,10 +109,10 @@ export async function ResearchAssistantWorkflow(config: ResearchAssistantConfig)
         onProgress,
     } = config
 
-    const enhancer  = PromptEnhancerModel(apiKey)
-    const outliner  = ResearchOutlinerModel(apiKey)
-    const writer    = AcademicWriterModel(apiKey)
-    const critiquer = SelfCritiqueModel(apiKey)
+    const enhancer  = instantiateSpecialPreset(apiKey, PromptEnhancerPreset)
+    const outliner  = instantiateSpecialPreset(apiKey, ResearchOutlinerPreset)
+    const writer    = instantiateSpecialPreset(apiKey, AcademicWriterPreset)
+    const critiquer = instantiateSpecialPreset(apiKey, SelfCritiquePreset)
 
     // 1 ─ Enhance topic
     log(onProgress, "Step 1/5 — Enhancing research topic…")
@@ -128,7 +129,7 @@ export async function ResearchAssistantWorkflow(config: ResearchAssistantConfig)
     )
 
     if (!Array.isArray(outline.sections) || outline.sections.length === 0) {
-        throw new Error("ResearchOutlinerModel returned an outline with no sections.")
+        throw new Error("ResearchOutlinerPreset returned an outline with no sections.")
     }
 
     log(onProgress, `  Outline: "${outline.title}" · ${outline.sections.length} sections`)
