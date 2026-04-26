@@ -59,7 +59,7 @@ export function getModelSelectOptions(provider: Provider): SelectOption<string>[
     return getIndexedModels(provider).map(model => ({
         value: String(model.index),
         label: `[${model.index}] ${model.name}`,
-        hint: `${model.description} | context ${formatInteger(model.context)} | ${formatPricingHint(model)}`,
+        hint: `${model.description} | ${formatPricingHint(model)}`,
     }))
 }
 
@@ -68,12 +68,9 @@ export function formatProviderName(provider: Provider): string {
         case "anthropic": return "Anthropic"
         case "openai": return "OpenAI"
         case "gemini": return "Gemini"
+        case "deepseek": return "DeepSeek"
         case "grok": return "Grok"
     }
-}
-
-function formatInteger(value: number): string {
-    return new Intl.NumberFormat("en-US").format(value)
 }
 
 function formatPricingHint(model: ModelInfo): string {

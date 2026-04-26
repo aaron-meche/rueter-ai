@@ -78,7 +78,6 @@ function findModelIndex(provider: Provider, modelName: string): number {
         const candidateKeys = [
             model.name,
             model.display_name,
-            ...(model.aliases ?? []),
         ]
 
         return candidateKeys.some(candidate => {

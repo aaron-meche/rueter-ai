@@ -119,7 +119,7 @@ export function renderProviderCatalog(provider: string, models: readonly Indexed
     for (const model of models) {
         lines.push(`${theme.accent(`[${model.index}]`)} ${theme.bold(model.name)}`)
         lines.push(`    ${model.description}`)
-        lines.push(`    context: ${formatInteger(model.context)} | ${formatModelPricing(model)}`)
+        lines.push(`    ${formatModelPricing(model)}`)
         lines.push("")
     }
 
@@ -134,7 +134,6 @@ export function renderModelDetail(model: IndexedModelInfo): string {
             { label: "provider", value: formatProviderName(model.provider) },
             { label: "index", value: String(model.index) },
             { label: "model", value: model.name },
-            { label: "context", value: formatInteger(model.context) },
             { label: "input", value: model.pricing_available === false ? "n/a" : `$${model.input_cost.toFixed(2)} / 1M tokens` },
             { label: "output", value: model.pricing_available === false ? "n/a" : `$${model.output_cost.toFixed(2)} / 1M tokens` },
         ]),

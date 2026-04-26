@@ -19,11 +19,98 @@ export interface ResolvedModelSelection {
     model: ModelInfo
 }
 
+type ConfigField = keyof RueterModelConfig
+type ConfigSupport = Record<ConfigField, boolean>
+
 const DEFAULT_SYSTEM_PROMPT = ""
 const DEFAULT_TEMPERATURE = 0.7
 const DEFAULT_MAX_TOKENS = 1024
 const MAX_FALLBACK_TOKENS = 100_000
 const MAX_N = 100
+
+const ANTHROPIC_CONFIG_SUPPORT: ConfigSupport = {
+    systemPrompt: true,
+    temperature: true,
+    maxTokens: true,
+    topP: true,
+    topK: true,
+    frequencyPenalty: false,
+    presencePenalty: false,
+    stopSequences: true,
+    n: false,
+}
+
+const OPENAI_CONFIG_SUPPORT: ConfigSupport = {
+    systemPrompt: true,
+    temperature: true,
+    maxTokens: true,
+    topP: true,
+    topK: false,
+    frequencyPenalty: true,
+    presencePenalty: true,
+    stopSequences: true,
+    n: true,
+}
+
+const GEMINI_CONFIG_SUPPORT: ConfigSupport = {
+    systemPrompt: true,
+    temperature: true,
+    maxTokens: true,
+    topP: true,
+    topK: true,
+    frequencyPenalty: false,
+    presencePenalty: false,
+    stopSequences: true,
+    n: true,
+}
+
+const GROK_REASONING_CONFIG_SUPPORT: ConfigSupport = {
+    systemPrompt: true,
+    temperature: true,
+    maxTokens: true,
+    topP: true,
+    topK: false,
+    frequencyPenalty: false,
+    presencePenalty: false,
+    stopSequences: false,
+    n: true,
+}
+
+const GROK_NON_REASONING_CONFIG_SUPPORT: ConfigSupport = {
+    systemPrompt: true,
+    temperature: true,
+    maxTokens: true,
+    topP: true,
+    topK: false,
+    frequencyPenalty: true,
+    presencePenalty: true,
+    stopSequences: true,
+    n: true,
+}
+
+const DEEPSEEK_CHAT_CONFIG_SUPPORT: ConfigSupport = {
+    systemPrompt: true,
+    temperature: true,
+    maxTokens: true,
+    topP: true,
+    topK: false,
+    frequencyPenalty: true,
+    presencePenalty: true,
+    stopSequences: true,
+    n: false,
+}
+
+const DEEPSEEK_REASONER_CONFIG_SUPPORT: ConfigSupport = {
+    systemPrompt: true,
+    temperature: true,
+    maxTokens: true,
+    topP: true,
+    topK: false,
+    frequencyPenalty: false,
+    presencePenalty: false,
+    stopSequences: true,
+    n: false,
+}
 
 export function validateApiKey(apiKey: string): string {
     if (typeof apiKey !== "string" || apiKey.trim().length === 0) {
@@ -53,47 +140,47 @@ export function normalizeRueterModelConfig(
     }
 
     if (config.systemPrompt !== undefined) {
-        assertFieldSupported(model, "system_prompt", "systemPrompt")
+        assertFieldSupported(provider, model, "systemPrompt")
         normalized.systemPrompt = validateSystemPrompt(config.systemPrompt)
     }
 
     if (config.temperature !== undefined) {
-        assertFieldSupported(model, "temperature", "temperature")
+        assertFieldSupported(provider, model, "temperature")
         normalized.temperature = validateTemperature(config.temperature)
     }
 
     if (config.maxTokens !== undefined) {
-        assertFieldSupported(model, "max_tokens", "maxTokens")
+        assertFieldSupported(provider, model, "maxTokens")
         normalized.maxTokens = validateMaxTokens(config.maxTokens, model)
     }
 
     if (config.topP !== undefined) {
-        assertFieldSupported(model, "top_p", "topP")
+        assertFieldSupported(provider, model, "topP")
         normalized.topP = validateUnitInterval(config.topP, "topP")
     }
 
     if (config.topK !== undefined) {
-        assertFieldSupported(model, "top_k", "topK")
+        assertFieldSupported(provider, model, "topK")
         normalized.topK = validatePositiveInteger(config.topK, "topK")
     }
 
     if (config.frequencyPenalty !== undefined) {
-        assertFieldSupported(model, "frequency_penalty", "frequencyPenalty")
+        assertFieldSupported(provider, model, "frequencyPenalty")
         normalized.frequencyPenalty = validateFiniteNumber(config.frequencyPenalty, "frequencyPenalty")
     }
 
     if (config.presencePenalty !== undefined) {
-        assertFieldSupported(model, "presence_penalty", "presencePenalty")
+        assertFieldSupported(provider, model, "presencePenalty")
         normalized.presencePenalty = validateFiniteNumber(config.presencePenalty, "presencePenalty")
     }
 
     if (config.stopSequences !== undefined) {
-        assertFieldSupported(model, "stop_sequences", "stopSequences")
+        assertFieldSupported(provider, model, "stopSequences")
         normalized.stopSequences = validateStopSequences(config.stopSequences)
     }
 
     if (config.n !== undefined) {
-        assertFieldSupported(model, "n", "n")
+        assertFieldSupported(provider, model, "n")
         normalized.n = validateCandidateCount(config.n)
     }
 
@@ -133,12 +220,31 @@ export function validateMaxTokens(value: number, model: ModelInfo): number {
 }
 
 function assertFieldSupported(
+    provider: Provider,
     model: ModelInfo,
-    field: keyof ModelInfo["config_support"],
-    label: keyof RueterModelConfig
+    field: ConfigField
 ): void {
-    if (!model.config_support[field]) {
-        throw new Error(`Model "${model.name}" does not support "${String(label)}".`)
+    if (!getConfigSupport(provider, model)[field]) {
+        throw new Error(`Model "${model.name}" does not support "${String(field)}".`)
+    }
+}
+
+function getConfigSupport(provider: Provider, model: ModelInfo): ConfigSupport {
+    switch (provider) {
+        case "anthropic":
+            return ANTHROPIC_CONFIG_SUPPORT
+        case "openai":
+            return OPENAI_CONFIG_SUPPORT
+        case "gemini":
+            return GEMINI_CONFIG_SUPPORT
+        case "deepseek":
+            return model.name.includes("reasoner") || model.name.endsWith("-r1")
+                ? DEEPSEEK_REASONER_CONFIG_SUPPORT
+                : DEEPSEEK_CHAT_CONFIG_SUPPORT
+        case "grok":
+            return model.name.includes("non-reasoning")
+                ? GROK_NON_REASONING_CONFIG_SUPPORT
+                : GROK_REASONING_CONFIG_SUPPORT
     }
 }
 

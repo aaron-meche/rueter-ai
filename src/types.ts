@@ -27,31 +27,30 @@ export interface ModelConfigSupport {
 export interface ModelInfo {
     name: string
     display_name: string
-    family: string
+    description: string
     input_cost: number
     output_cost: number
-    cached_input_cost?: number
-    context: number
     max_output_tokens?: number
+    pricing_available?: boolean
+    family?: string
+    cached_input_cost?: number
+    context?: number
     knowledge_cutoff?: string
-    description: string
-    status: ModelStatus
-    release_stage: ModelReleaseStage
-    aliases?: string[]
-    reasoning: boolean
-    streaming: boolean
-    vision: boolean
-    function_calling: boolean
-    structured_outputs: boolean
-    tool_use: boolean
-    prompt_caching: boolean
-    input_modalities: ModelModality[]
-    output_modalities: ModelModality[]
-    supported_endpoints: string[]
-    config_support: ModelConfigSupport
+    status?: ModelStatus
+    release_stage?: ModelReleaseStage
+    reasoning?: boolean
+    streaming?: boolean
+    vision?: boolean
+    function_calling?: boolean
+    structured_outputs?: boolean
+    tool_use?: boolean
+    prompt_caching?: boolean
+    input_modalities?: ModelModality[]
+    output_modalities?: ModelModality[]
+    supported_endpoints?: string[]
+    config_support?: ModelConfigSupport
     current?: boolean
     recommended?: boolean
-    pricing_available?: boolean
     retirement_date?: string
 }
 export type Models = Record<Provider, ModelInfo[]>

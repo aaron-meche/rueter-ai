@@ -5,6 +5,7 @@ export const providerApiKeyEnvVars: Record<Provider, string[]> = {
     anthropic: ["ANTHROPIC_API_KEY"],
     openai: ["OPENAI_API_KEY"],
     gemini: ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
+    deepseek: ["DEEPSEEK_API_KEY"],
     grok: ["GROK_API", "XAI_API_KEY"],
 }
 

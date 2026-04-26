@@ -16,6 +16,7 @@ export const SUPPORTED_MODEL_CONFIG_FIELDS: Record<Provider, ReadonlySet<keyof R
     anthropic: new Set(["systemPrompt", "temperature", "maxTokens", "topP", "topK", "stopSequences"]),
     openai: new Set(["systemPrompt", "temperature", "maxTokens", "topP", "frequencyPenalty", "presencePenalty", "stopSequences", "n"]),
     gemini: new Set(["systemPrompt", "temperature", "maxTokens", "topP", "topK", "stopSequences", "n"]),
+    deepseek: new Set(["systemPrompt", "temperature", "maxTokens", "topP", "frequencyPenalty", "presencePenalty", "stopSequences"]),
     grok: new Set(["systemPrompt", "temperature", "maxTokens", "topP", "frequencyPenalty", "presencePenalty", "stopSequences", "n"]),
 }
 
