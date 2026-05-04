@@ -15,7 +15,7 @@ import {
     SelfCritiquePreset,
     WritingStyleAnalyzerPreset,
     StyleReplicatorPreset,
-} from "../models/SpecialModels.js"
+} from "../classes/SpecialModels.js"
 
 import {
     ask, extractCritiqueScore, log, timestamp,

@@ -20,7 +20,7 @@ import {
     FunctionGeneratorPreset,
     FileAssemblerPreset,
     SecurityAuditorPreset,
-} from "../models/SpecialModels.js"
+} from "../classes/SpecialModels.js"
 
 import {
     ask, askForJson, sanitizeCode, log, timestamp,

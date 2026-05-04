@@ -5,7 +5,7 @@
 // created by Aaron Meche
 //
 
-import type { Builders, BuilderConfig, HttpRequestFormat } from "../types.js"
+import type { Builders, BuilderConfig, HttpRequestFormat } from "./types.js"
 
 export const requestBuilders: Builders = {
     "anthropic": (config: BuilderConfig, prompt: string): HttpRequestFormat => ({
@@ -21,8 +21,6 @@ export const requestBuilders: Builders = {
             temperature: config.temperature,
             system: config.systemPrompt,
             messages: [{ role: "user", content: prompt }],
-            ...(config.topP !== undefined && { top_p: config.topP }),
-            ...(config.topK !== undefined && { top_k: config.topK }),
             ...(config.stopSequences && { stop_sequences: config.stopSequences })
         }
     }),
@@ -40,11 +38,7 @@ export const requestBuilders: Builders = {
             ],
             temperature: config.temperature,
             max_tokens: config.maxTokens,
-            ...(config.topP !== undefined && { top_p: config.topP }),
-            ...(config.frequencyPenalty !== undefined && { frequency_penalty: config.frequencyPenalty }),
-            ...(config.presencePenalty !== undefined && { presence_penalty: config.presencePenalty }),
-            ...(config.stopSequences && { stop: config.stopSequences }),
-            ...(config.n !== undefined && { n: config.n })
+            ...(config.stopSequences && { stop: config.stopSequences })
         }
     }),
     "openai": (config: BuilderConfig, prompt: string): HttpRequestFormat => ({
@@ -61,11 +55,7 @@ export const requestBuilders: Builders = {
             ],
             temperature: config.temperature,
             max_tokens: config.maxTokens,
-            ...(config.topP !== undefined && { top_p: config.topP }),
-            ...(config.frequencyPenalty !== undefined && { frequency_penalty: config.frequencyPenalty }),
-            ...(config.presencePenalty !== undefined && { presence_penalty: config.presencePenalty }),
-            ...(config.stopSequences && { stop: config.stopSequences }),
-            ...(config.n !== undefined && { n: config.n })
+            ...(config.stopSequences && { stop: config.stopSequences })
         }
     }),
     "deepseek": (config: BuilderConfig, prompt: string): HttpRequestFormat => ({
@@ -82,9 +72,6 @@ export const requestBuilders: Builders = {
             ],
             max_tokens: config.maxTokens,
             ...(config.temperature !== undefined && { temperature: config.temperature }),
-            ...(config.topP !== undefined && { top_p: config.topP }),
-            ...(config.frequencyPenalty !== undefined && { frequency_penalty: config.frequencyPenalty }),
-            ...(config.presencePenalty !== undefined && { presence_penalty: config.presencePenalty }),
             ...(config.stopSequences && { stop: config.stopSequences }),
         }
     }),
@@ -99,10 +86,7 @@ export const requestBuilders: Builders = {
             generationConfig: {
                 temperature: config.temperature,
                 maxOutputTokens: config.maxTokens,
-                ...(config.topP !== undefined && { topP: config.topP }),
-                ...(config.topK !== undefined && { topK: config.topK }),
                 ...(config.stopSequences && { stopSequences: config.stopSequences }),
-                ...(config.n !== undefined && { candidateCount: config.n })
             },
             ...(config.systemPrompt && {
                 systemInstruction: { parts: [{ text: config.systemPrompt }] }

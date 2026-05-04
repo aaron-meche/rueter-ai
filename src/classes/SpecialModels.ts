@@ -26,7 +26,7 @@ import type { ModelSelector, Provider, RueterModelConfig } from "../types.js"
 import { RueterModel } from "./RueterModel.js"
 
 export const DEFAULT_SPECIAL_PRESET_PROVIDER: Provider = "grok"
-export const DEFAULT_SPECIAL_PRESET_MODEL = "grok-4-fast-reasoning"
+export const DEFAULT_SPECIAL_PRESET_MODEL = "grok-4-1-fast-reasoning"
 
 function createPreset(config: RueterModelConfig): RueterModelConfig {
     return Object.freeze({

@@ -15,7 +15,7 @@ import {
     SelfCritiquePreset,
     AcademicWriterPreset,
     ResearchOutlinerPreset,
-} from "../models/SpecialModels.js"
+} from "../classes/SpecialModels.js"
 
 import {
     ask, askForJson, extractCritiqueScore, log, timestamp,

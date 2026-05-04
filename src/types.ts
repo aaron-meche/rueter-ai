@@ -7,53 +7,15 @@
 
 export type Provider = "anthropic" | "openai" | "gemini" | "grok" | "deepseek"
 export type ModelSelector = number | string
-export type ModelStatus = "active" | "preview" | "legacy" | "deprecated" | "retired"
-export type ModelReleaseStage = "stable" | "preview" | "experimental" | "deprecated" | "retired"
-export type ModelModality = "text" | "image" | "audio" | "video" | "pdf"
 
-export interface ModelConfigSupport {
-    system_prompt: boolean
-    temperature: boolean
-    max_tokens: boolean
-    top_p: boolean
-    top_k: boolean
-    frequency_penalty: boolean
-    presence_penalty: boolean
-    stop_sequences: boolean
-    n: boolean
-}
-
-// Model-Specific Configuration
 export interface ModelInfo {
     name: string
     display_name: string
-    description: string
     input_cost: number
     output_cost: number
-    max_output_tokens?: number
-    pricing_available?: boolean
-    family?: string
-    cached_input_cost?: number
-    context?: number
-    knowledge_cutoff?: string
-    status?: ModelStatus
-    release_stage?: ModelReleaseStage
-    reasoning?: boolean
-    streaming?: boolean
-    vision?: boolean
-    function_calling?: boolean
-    structured_outputs?: boolean
-    tool_use?: boolean
-    prompt_caching?: boolean
-    input_modalities?: ModelModality[]
-    output_modalities?: ModelModality[]
-    supported_endpoints?: string[]
-    config_support?: ModelConfigSupport
-    current?: boolean
-    recommended?: boolean
-    retirement_date?: string
 }
-export type Models = Record<Provider, ModelInfo[]>
+export type ModelCatalogEntry = Omit<ModelInfo, "name">
+export type Models = Record<Provider, Record<string, ModelCatalogEntry>>
 
 // Provider-specific HTTP Request Formatting Builders
 export interface HttpRequestFormat {
@@ -68,12 +30,7 @@ export interface BuilderConfig {
     maxTokens: number
     temperature: number
     systemPrompt: string
-    topP?: number
-    topK?: number
-    frequencyPenalty?: number
-    presencePenalty?: number
     stopSequences?: string[]
-    n?: number
 }
 export type BuilderFn = (config: BuilderConfig, prompt: string) => HttpRequestFormat
 export type Builders = Record<Provider, BuilderFn>
@@ -86,24 +43,14 @@ export interface RueterModelConfig {
     systemPrompt?: string;
     temperature?: number;
     maxTokens?: number;
-    topP?: number;
-    topK?: number;
-    frequencyPenalty?: number;
-    presencePenalty?: number;
     stopSequences?: string[];
-    n?: number;
 }
 
 export interface NormalizedRueterModelConfig {
     systemPrompt: string
     temperature: number
     maxTokens: number
-    topP?: number
-    topK?: number
-    frequencyPenalty?: number
-    presencePenalty?: number
     stopSequences?: string[]
-    n?: number
 }
 // Prompt Results
 export type RueterResults = Record<string, ModelResult>

@@ -13,7 +13,7 @@ import {
     instantiateSpecialPreset,
     DebugPreset,
     SecurityAuditorPreset,
-} from "../models/SpecialModels.js"
+} from "../classes/SpecialModels.js"
 
 import {
     ask, log, timestamp,

@@ -14,7 +14,7 @@ import {
     RefactorPreset,
     SecurityAuditorPreset,
     TestGeneratorPreset,
-} from "../models/SpecialModels.js"
+} from "../classes/SpecialModels.js"
 
 import {
     ask, log, timestamp,
