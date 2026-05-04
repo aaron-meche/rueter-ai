@@ -1,6 +1,6 @@
 # Rueter AI
 
-Rueter AI is a TypeScript-first ESM library that gives Anthropic, OpenAI, Google Gemini, and xAI Grok a consistent prompt interface.
+Rueter AI is a TypeScript-first ESM library that gives Anthropic, OpenAI, Google Gemini, xAI Grok, and DeepSeek a consistent prompt interface.
 
 The two core primitives are:
 
@@ -139,7 +139,7 @@ new RueterModel(provider, apiKey, modelIndex?, config?)
 
 Parameters:
 
-- `provider`: `"anthropic" | "openai" | "gemini" | "grok"`
+- `provider`: `"anthropic" | "openai" | "gemini" | "grok" | "deepseek"`
 - `apiKey`: provider API key
 - `modelIndex`: numeric index into the built-in model catalog for that provider, default `0`
 - `config`: optional model settings
@@ -149,12 +149,7 @@ Supported config fields:
 - `systemPrompt?: string`
 - `temperature?: number`
 - `maxTokens?: number`
-- `topP?: number`
-- `topK?: number`
-- `frequencyPenalty?: number`
-- `presencePenalty?: number`
 - `stopSequences?: string[]`
-- `n?: number`
 
 Instance methods:
 
@@ -200,33 +195,49 @@ Current orchestrator-wide shared settings are limited to:
 
 ### Anthropic
 
-- `0` -> `claude-haiku-4-5-20251001`
-- `1` -> `claude-sonnet-4-5-20250929`
-- `2` -> `claude-sonnet-4-6`
-- `3` -> `claude-opus-4-6`
+- `0` -> `claude-3-haiku-20240307`
+- `1` -> `claude-3-5-haiku-20241022`
+- `2` -> `claude-haiku-4-5`
+- `3` -> `claude-sonnet-4-6`
+- `4` -> `claude-opus-4-7`
 
 ### OpenAI
 
-- `0` -> `gpt-5.4-nano`
-- `1` -> `gpt-5.4-mini`
-- `2` -> `gpt-5.4`
-- `3` -> `o3`
+- `0` -> `gpt-5-nano`
+- `1` -> `gpt-5.4-nano`
+- `2` -> `gpt-5-mini`
+- `3` -> `gpt-5.4-mini`
+- `4` -> `o4-mini`
+- `5` -> `gpt-4.1`
+- `6` -> `o3`
+- `7` -> `gpt-5.4`
+- `8` -> `gpt-5.5`
+- `9` -> `o3-pro`
+- `10` -> `gpt-5.5-pro`
 
 ### Gemini
 
-- `0` -> `gemini-2.5-flash-lite`
-- `1` -> `gemini-2.5-flash`
-- `2` -> `gemini-2.5-pro`
-- `3` -> `gemini-2.5-pro`
+- `0` -> `gemini-2.0-flash-lite`
+- `1` -> `gemini-2.5-flash-lite`
+- `2` -> `gemini-2.5-flash`
+- `3` -> `gemini-3-flash-preview`
+- `4` -> `gemini-2.5-pro`
+- `5` -> `gemini-3-pro-preview`
+
+### DeepSeek
+
+- `0` -> `deepseek-chat`
+- `1` -> `deepseek-reasoner`
+- `2` -> `deepseek-v4-pro`
 
 ### Grok
 
 - `0` -> `grok-4-1-fast-non-reasoning`
 - `1` -> `grok-4-1-fast-reasoning`
-- `2` -> `grok-4-fast-reasoning`
-- `3` -> `grok-4.20-reasoning`
-
-Note: the current Gemini catalog in source contains `gemini-2.5-pro` at both indices `2` and `3`.
+- `2` -> `grok-code-fast-1`
+- `3` -> `grok-4.20-non-reasoning`
+- `4` -> `grok-4.20-reasoning`
+- `5` -> `grok-4.20-multi-agent`
 
 ## Cost Tracking
 
@@ -464,10 +475,9 @@ The package re-exports its public types, including:
 
 - The correct `Rueter` constructor is `new Rueter(models, config)`. It is not `new Rueter({ models: [...] })`.
 - `Rueter` requires a config object as its second argument in the current implementation. Pass `{}` if you do not want shared overrides.
-- `Rueter.addModel()` only accepts `provider`, `apiKey`, and `modelIndex`. If you need advanced per-model config, instantiate `RueterModel` objects manually and pass them into `Rueter`.
+- `Rueter.addModel()` only accepts `provider`, `apiKey`, and `modelIndex`. If you need per-model config, instantiate `RueterModel` objects manually and pass them into `Rueter`.
 - Model selection is currently numeric-index based.
 - There is no streaming API yet. Responses are returned only after the full provider response is available.
-- Some providers/builders accept `n`, but the current `prompt()` implementation returns only the first textual choice/candidate.
 - The core request layer uses native `fetch`, but the package itself is not literally zero-dependency.
 
 ## License

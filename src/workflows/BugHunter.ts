@@ -10,9 +10,10 @@
 import * as nodePath from "node:path"
 
 import {
-    DebugModel,
-    SecurityAuditorModel,
-} from "../models/SpecialModels.js"
+    instantiateSpecialPreset,
+    DebugPreset,
+    SecurityAuditorPreset,
+} from "../classes/SpecialModels.js"
 
 import {
     ask, log, timestamp,
@@ -80,8 +81,8 @@ function buildBugReportMd(sourceDir: string, findings: BugFinding[], isComplete:
  * producing a comprehensive RueterBugReport.md with per-file findings.
  *
  * Pipeline (per file):
- *   1. Logic & runtime analysis → DebugModel        (parallel per file)
- *   2. Security analysis → SecurityAuditorModel     (parallel per file)
+ *   1. Logic & runtime analysis → DebugPreset        (parallel per file)
+ *   2. Security analysis → SecurityAuditorPreset     (parallel per file)
  *   3. Append findings to report after each scan
  */
 export async function BugHunterWorkflow(config: BugHunterConfig): Promise<void> {
@@ -93,8 +94,8 @@ export async function BugHunterWorkflow(config: BugHunterConfig): Promise<void> 
         onProgress,
     } = config
 
-    const debugger_  = DebugModel(apiKey)
-    const secAuditor = SecurityAuditorModel(apiKey)
+    const debugger_  = instantiateSpecialPreset(apiKey, DebugPreset)
+    const secAuditor = instantiateSpecialPreset(apiKey, SecurityAuditorPreset)
 
     log(onProgress, `Collecting source files in ${sourceDir}…`)
     const files = await collectSourceFiles(sourceDir, extensions)

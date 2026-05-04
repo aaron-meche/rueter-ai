@@ -5,17 +5,17 @@
 // created by Aaron Meche
 //
 
-export type Provider = "anthropic" | "openai" | "gemini" | "grok"
+export type Provider = "anthropic" | "openai" | "gemini" | "grok" | "deepseek"
+export type ModelSelector = number | string
 
-// Model-Specific Configuration
 export interface ModelInfo {
     name: string
+    display_name: string
     input_cost: number
     output_cost: number
-    context: number
-    description: string
 }
-export type Models = Record<Provider, ModelInfo[]>
+export type ModelCatalogEntry = Omit<ModelInfo, "name">
+export type Models = Record<Provider, Record<string, ModelCatalogEntry>>
 
 // Provider-specific HTTP Request Formatting Builders
 export interface HttpRequestFormat {
@@ -30,32 +30,11 @@ export interface BuilderConfig {
     maxTokens: number
     temperature: number
     systemPrompt: string
-    topP?: number
-    topK?: number
-    frequencyPenalty?: number
-    presencePenalty?: number
     stopSequences?: string[]
-    n?: number
 }
 export type BuilderFn = (config: BuilderConfig, prompt: string) => HttpRequestFormat
 export type Builders = Record<Provider, BuilderFn>
 
-// ----------------------
-// Per-API-Response Items
-// ----------------------
-// Cost Breakdown
-export interface UsageCost {
-    model: string
-    input: string
-    output: string
-    total: string
-}
-// Single Model Result
-export interface ModelResult {
-    res: string | null
-    cost: UsageCost | null
-    error?: string
-}
 // -----------------------------
 // Multi-Model (Orchestra) Items
 // -----------------------------
@@ -64,12 +43,31 @@ export interface RueterModelConfig {
     systemPrompt?: string;
     temperature?: number;
     maxTokens?: number;
-    topP?: number;
-    topK?: number;
-    frequencyPenalty?: number;
-    presencePenalty?: number;
     stopSequences?: string[];
-    n?: number;
+}
+
+export interface NormalizedRueterModelConfig {
+    systemPrompt: string
+    temperature: number
+    maxTokens: number
+    stopSequences?: string[]
 }
 // Prompt Results
 export type RueterResults = Record<string, ModelResult>
+
+// ----------------------
+// Per-API-Response Items
+// ----------------------
+// Single Model Result
+export interface ModelResult {
+    res: string | null
+    cost: UsageCost | null
+    error?: string
+}
+// Cost Breakdown
+export interface UsageCost {
+    model: string
+    input: string
+    output: string
+    total: string
+}

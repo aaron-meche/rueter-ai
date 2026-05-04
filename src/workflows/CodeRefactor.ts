@@ -10,10 +10,11 @@
 import * as nodePath from "node:path"
 
 import {
-    RefactorModel,
-    SecurityAuditorModel,
-    TestGeneratorModel,
-} from "../models/SpecialModels.js"
+    instantiateSpecialPreset,
+    RefactorPreset,
+    SecurityAuditorPreset,
+    TestGeneratorPreset,
+} from "../classes/SpecialModels.js"
 
 import {
     ask, log, timestamp,
@@ -91,9 +92,9 @@ function buildRefactorReportMd(
  * output directory while optionally generating a test file for each one.
  *
  * Pipeline (per file):
- *   1. Refactor → RefactorModel
- *   2. Security check → SecurityAuditorModel
- *   3. (Optional) Generate tests → TestGeneratorModel
+ *   1. Refactor → RefactorPreset
+ *   2. Security check → SecurityAuditorPreset
+ *   3. (Optional) Generate tests → TestGeneratorPreset
  */
 export async function CodeRefactorWorkflow(config: CodeRefactorConfig): Promise<void> {
     const {
@@ -106,9 +107,9 @@ export async function CodeRefactorWorkflow(config: CodeRefactorConfig): Promise<
         onProgress,
     } = config
 
-    const refactorer = RefactorModel(apiKey)
-    const secAuditor = SecurityAuditorModel(apiKey)
-    const testGen    = TestGeneratorModel(apiKey)
+    const refactorer = instantiateSpecialPreset(apiKey, RefactorPreset)
+    const secAuditor = instantiateSpecialPreset(apiKey, SecurityAuditorPreset)
+    const testGen    = instantiateSpecialPreset(apiKey, TestGeneratorPreset)
 
     log(onProgress, `Collecting source files in ${sourceDir}…`)
     const files = await collectSourceFiles(sourceDir, extensions)
