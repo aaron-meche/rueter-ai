@@ -130,8 +130,8 @@ export const models = {
             input_cost: 0.14,
             output_cost: 0.28,
         },
-        "deepseek-reasoner": {
-            display_name: "DeepSeek Reasoner",
+        "deepseek-v4-flash": {
+            display_name: "DeepSeek V4 Flash",
             input_cost: 0.14,
             output_cost: 0.28,
         },
